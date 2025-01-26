@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
+import { cn } from "./utils";
 
 type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
@@ -46,6 +47,14 @@ function App() {
     const minutes = Math.floor(time / 60) + '';
     const seconds = time % 60 + '';
     return `${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`
+  }
+
+  const formatMinutes = (time: number) => {
+    return `${Math.floor(time / 60).toString().padStart(2, '0')}`
+  }
+
+  const formatSeconds = (time: number) => {
+    return `${Math.floor(time % 60).toString().padStart(2, '0')}`
   }
 
   const workerRef = useRef<Worker | null>(null);
@@ -151,7 +160,7 @@ function App() {
               onClick={() => removeTimer(timer.id)}>
               x
             </button>
-            <div className="flex w-full justify-between">
+            <div className="flex w-full justify-between countdown font-mono">
               <p>{timer.task || 'task'}</p>
               <p>{formatTime(timer.duration)}</p>
             </div>
@@ -164,31 +173,47 @@ function App() {
       </div>
       <div className="flex items-center justify-center w-full">
         <div className="flex flex-col gap-3">
+          {/* add time */}
           <div className="flex w-full gap-3">
-            <button onClick={() => selectTime(1)} className="p-2 text-3xl bg-white/50 hover:bg-white/30 cursor-pointer rounded-full">+10</button>
-            <button onClick={() => selectTime(1200)} className="p-2 text-3xl bg-white/50 hover:bg-white/30 cursor-pointer rounded-full">+20</button>
-            <button onClick={() => selectTime(1800)} className="p-2 text-3xl bg-white/50 hover:bg-white/30 cursor-pointer rounded-full">+30</button>
-            <button onClick={() => selectTime(2400)} className="p-2 text-3xl bg-white/50 hover:bg-white/30 cursor-pointer rounded-full">+40</button>
+            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1)} className="btn btn-outline text-2xl">+10</button>
+            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1200)} className="btn btn-outline text-2xl">+20</button>
+            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1800)} className="btn btn-outline text-2xl">+30</button>
+            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(2400)} className="btn btn-outline text-2xl">+40</button>
           </div>
-          <h1 className="text-9xl">{formatTime(state.currentTimer.remaining_time || 0)}</h1>
+          <h1 className="text-9xl countdown font-mono">
+            {/* {formatTime(state.currentTimer.remaining_time || 0)} */}
+            <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
+            <span style={{ "--value": formatSeconds(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatSeconds(state.currentTimer.remaining_time || 0)}</span>
+          </h1>
           <p className="text-center">{state.currentTimer.task}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {state.currentTimer.tags.map((tag, index) =>
-              <span key={index} className="relative cursor-pointer group px-2 py-1 bg-white/20 rounded-sm">
+              // <span key={index} className="relative cursor-pointer group px-2 py-1 bg-white/20 rounded-sm">
+              //   {tag}
+              //   <button
+              //     className="cursor-pointer absolute block sm:hidden sm:group-hover:block -top-2 -right-2 bg-red-500 text-white rounded-full text-xs px-1 hover:bg-red-600"
+              //     onClick={() => removeTag(tag)}>
+              //     x
+              //   </button>
+              // </span>
+              <span className="badge badge-md relative cursor-pointer group bg-transparent text-white">
                 {tag}
-                <button
-                  className="cursor-pointer absolute block sm:hidden sm:group-hover:block -top-2 -right-2 bg-red-500 text-white rounded-full text-xs px-1 hover:bg-red-600"
-                  onClick={() => removeTag(tag)}>
-                  x
-                </button>
+                <span onClick={() => removeTag(tag)} className="hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
               </span>
             )}
           </div>
-          <input value={state.currentTimer.newTask} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value } }))} onKeyDown={addTask} className="p-2 w-full" placeholder="add task, press enter to add" />
-          <input value={state.currentTimer.newTag} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))} onKeyDown={addTag} className="p-2 w-full" placeholder="add tag, press enter to add" />
-          <button onClick={toggleTimer} className={`w-full p-4 text-4xl bg-white/50 cursor-pointer hover:bg-white/30 rounded`}>
+          <input disabled={state.currentTimer.status === 'ACTIVE'} type="text" className={cn(
+            "p-2 w-full rounded",
+            state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
+          )} value={state.currentTimer.newTask} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value } }))} onKeyDown={addTask} placeholder="add task, press enter to add" />
+          <input disabled={state.currentTimer.status === 'ACTIVE'} type="text" className={cn(
+            "p-2 w-full rounded",
+            state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
+          )} value={state.currentTimer.newTag} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))} onKeyDown={addTag} placeholder="add tag, press enter to add" />
+          {/* <button onClick={toggleTimer} className={`w-full p-4 text-4xl bg-white/50 cursor-pointer hover:bg-white/30 rounded`}>
             {state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}
-          </button>
+          </button> */}
+          <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
         </div>
       </div>
     </div>
