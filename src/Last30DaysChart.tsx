@@ -7,6 +7,7 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
+    CartesianGrid,
 } from "recharts";
 import dayjs from "dayjs";
 
@@ -27,18 +28,18 @@ const generateLast30DaysDataWithTags = (tags) => {
 const tags = ["Work", "Study", "Exercise", "Leisure", "SideProject"];
 const data = generateLast30DaysDataWithTags(tags);
 
-const Last30DaysChart = () => {
-    const [showTags, setShowTags] = useState(false); // Toggle state for tags
+const Last30DaysChart = ({ className, showTags = false }: { className?: string, showTags?: boolean }) => {
+    // const [showTags, setShowTags] = useState(tags); // Toggle state for tags
 
     return (
-        <div className="w-full h-[500px]">
-            <div style={{ marginBottom: "20px", textAlign: "center" }}>
+        <div className={`w-full h-[500px] ${className}`}>
+            {/* <div style={{ marginBottom: "20px", textAlign: "center" }}>
                 <input
                     onChange={e => setShowTags(e.currentTarget.checked)}
                     type="checkbox"
                     className="toggle border-white bg-black checked:bg-black text-white"
                 />
-            </div>
+            </div> */}
 
             <ResponsiveContainer>
                 <BarChart
@@ -51,13 +52,13 @@ const Last30DaysChart = () => {
                         bottom: 5,
                     }}
                 >
-                    {/* <CartesianGrid strokeDasharray="" /> */}
+                    <CartesianGrid strokeDasharray="1 5" />
                     <XAxis
                         type="number"
                         label={{
                             value: "Hours Completed",
                             position: "insideBottom",
-                            offset: -3,
+                            offset: 0,
                         }}
                     />
                     <YAxis
@@ -109,7 +110,7 @@ const Last30DaysChart = () => {
                             <Bar
                                 key="totalTime"
                                 dataKey="totalTime"
-                                fill="#8884d8"
+                                fill="#fff"
                                 name="Total Time"
                             />,
                         ]}

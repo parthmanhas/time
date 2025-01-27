@@ -156,8 +156,19 @@ function App() {
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white">
       {/* chart */}
-      <div className="flex items-center justify-center h-full">
-      <Last30DaysChart />
+      <div role="tablist" className="flex items-center justify-center h-full tabs tabs-border opacity-20 hover:opacity-100">
+        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days" />
+        <div className="h-auto! tab-content bg-black">
+          <Last30DaysChart />
+        </div>
+
+        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days Tags" defaultChecked />
+        <div className="h-auto! tab-content bg-black">
+          <Last30DaysChart showTags={true}/>
+        </div>
+
+        {/* <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="Daily" />
+        <div className="h-auto! tab-content bg-black">Tab content 3</div> */}
       </div>
       {/* timer */}
       <div className="flex items-center justify-center w-full">
@@ -207,7 +218,7 @@ function App() {
       </div>
       {/* completed timers */}
       <div className={cn(
-        "w-full h-full p-10 flex flex-col gap-4 justify-center",
+        "w-full h-full p-10 flex flex-col gap-4 justify-center opacity-50 hover:opacity-100",
         state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
       )}>
         {state.timers.map(timer => (
