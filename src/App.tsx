@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "./utils";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import Last30DaysBarChart from "./Last30DaysChart";
+import Last30DaysChart from "./Last30DaysChart";
 
 type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
@@ -152,25 +155,11 @@ function App() {
 
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white">
-      <div className="w-full h-full p-10 flex flex-col gap-4 justify-center">
-        {state.timers.map(timer => (
-          <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group">
-            <button
-              className="cursor-pointer sm:hidden absolute sm:group-hover:block block -top-1 -right-2 bg-red-500 text-white rounded-full text-xs px-1 hover:bg-red-600"
-              onClick={() => removeTimer(timer.id)}>
-              x
-            </button>
-            <div className="flex w-full justify-between countdown font-mono">
-              <p>{timer.task || 'task'}</p>
-              <p>{formatTime(timer.duration)}</p>
-            </div>
-            <div className="flex w-full justify-between">
-              <p>{timer.status.toLowerCase()}</p>
-              <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
-            </div>
-          </div>
-        ))}
+      {/* chart */}
+      <div className="flex items-center justify-center h-full">
+      <Last30DaysChart />
       </div>
+      {/* timer */}
       <div className="flex items-center justify-center w-full">
         <div className="flex flex-col gap-3">
           {/* add time */}
@@ -216,6 +205,28 @@ function App() {
           <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
         </div>
       </div>
+      {/* completed timers */}
+      <div className={cn(
+        "w-full h-full p-10 flex flex-col gap-4 justify-center",
+        state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
+      )}>
+        {state.timers.map(timer => (
+          <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono">
+            <button onClick={() => removeTimer(timer.id)} className="cursor-pointer hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
+
+            <div className="flex w-full justify-between">
+              <p>{timer.task || 'task'}</p>
+              <p>{formatTime(timer.duration)}</p>
+            </div>
+            <div className="flex w-full justify-between">
+              <p>{timer.status.toLowerCase()}</p>
+              <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+
     </div>
   )
 }
