@@ -135,7 +135,11 @@ const Last30DaysChart = ({ className, showTags = false, timers }: { className?: 
                                 key={tag}
                                 dataKey={tag}
                                 stackId="a"
-                                fill={["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"][index % 5]} // Rotate colors for tags
+                                fill={[
+                                    "#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1",
+                                    "#a5d6a7", "#ffcc80", "#f48fb1", "#b3e5fc", "#c5e1a5",
+                                    "#ffd54f", "#64b5f6", "#81c784", "#d1c4e9", "#e57373"
+                                ][index % 15]} // Rotate colors for tags
                                 name={tag}
                             />
                         ))
