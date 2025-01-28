@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "./utils";
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import Last30DaysBarChart from "./Last30DaysChart";
-import Last30DaysChart from "./Last30DaysChart";
+import Last30DaysChart, { generateLast30DaysDataWithoutTags, generateLast30DaysDataWithTags } from "./Last30DaysChart";
+import { addTimer, deleteTimer, getTimers, initializeDB } from "./db";
 
 type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
-type Timer = {
+export type Timer = {
   id: string,
   duration: number;
   remaining_time: number;
@@ -26,9 +25,20 @@ type TimerState = {
 }
 
 function App() {
+
+  const [isDBReady, setIsDBReady] = useState<boolean>(false);
+
+  const handleInitDB = async () => {
+    const status = await initializeDB();
+    setIsDBReady(status);
+    await refreshTimers();
+  };
+
+
   // without id because id getting cached
   const getNewTimer = () => {
     return {
+      id: 'current-timer',
       duration: 600,
       remaining_time: 600,
       status: 'PAUSED' as TimerStatus,
@@ -42,8 +52,8 @@ function App() {
   }
 
   const [state, setState] = useState<TimerState>({
-    currentTimer: { ...getNewTimer(), id: uuidv4() },
-    timers: JSON.parse(localStorage.getItem('timers') || '[]')
+    currentTimer: getNewTimer(),
+    timers: []
   });
 
   const formatTime = (time: number) => {
@@ -70,12 +80,22 @@ function App() {
     });
   }
 
-  const saveTimer = (completedTimer: Timer) => {
+  const saveTimer = async (timer: Timer) => {
     // assign an id during save
-    setState(prev => ({ ...prev, timers: [...prev.timers, { ...completedTimer, id: uuidv4(), status: 'COMPLETED', completed_at: new Date().toISOString() }] }))
+    const { newTask, newTag, ...rest } = timer;
+    const newTimer: Omit<Timer, 'newTask' | 'newTag'> = {
+      ...rest,
+      id: uuidv4(),
+      status: 'COMPLETED' as TimerStatus,
+      completed_at: new Date().toISOString(),
+      task: timer.newTask,
+      tags: timer.tags
+    }
+    await addTimer(newTimer);
+    await refreshTimers();
   }
 
-  const addTag = (key) => {
+  const addTag = (key: React.KeyboardEvent<HTMLInputElement>) => {
     if (key.code === 'Enter' && state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1) {
       setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
     } else {
@@ -83,7 +103,7 @@ function App() {
     }
   }
 
-  const addTask = (key) => {
+  const addTask = (key: React.KeyboardEvent<HTMLInputElement>) => {
     if (key.code === 'Enter') {
       setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask, newTask: '' } }));
     }
@@ -93,15 +113,35 @@ function App() {
     setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: prev.currentTimer.tags.filter(t => t !== name) } }))
   }
 
-  const removeTimer = (timerId: string) => {
+  const refreshTimers = async () => {
+    const timers: Timer[] = await getTimers();
+    setState(prev => ({ ...prev, timers }));
+  }
+
+  const removeTimer = async (timerId: string) => {
+    await deleteTimer(timerId);
     setState(prev => ({ ...prev, timers: prev.timers.filter(timer => timer.id !== timerId) }))
   }
 
-  useEffect(() => {
-    localStorage.setItem('timers', JSON.stringify(state.timers));
-  }, [state.timers])
+  const selectTime = (duration: number) => {
+    setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, duration, remaining_time: duration, status: 'PAUSED' } }))
+  }
+
+  const resetCurrentTimer = () => {
+    setState(prev => ({ ...prev, currentTimer: getNewTimer() }))
+  }
+
+  const completeTimer = () => {
+    saveTimer(state.currentTimer);
+    resetCurrentTimer();
+    workerRef.current?.postMessage({
+      type: "STOP_TIMER",
+      payload: { remaining_time: 0 },
+    });
+  }
 
   useEffect(() => {
+    handleInitDB()
     if (!workerRef.current) {
       const workerUrl = new URL('../public/worker.js', import.meta.url);
       const worker = new Worker(workerUrl);
@@ -149,22 +189,18 @@ function App() {
     }
   }, []);
 
-  const selectTime = (duration: number) => {
-    setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, duration, remaining_time: duration, status: 'PAUSED' } }))
-  }
-
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white">
       {/* chart */}
       <div role="tablist" className="flex items-center justify-center h-full tabs tabs-border opacity-20 hover:opacity-100">
-        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days" />
+        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days" defaultChecked />
         <div className="h-auto! tab-content bg-black">
-          <Last30DaysChart />
+          <Last30DaysChart timers={state.timers} />
         </div>
 
-        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days Tags" defaultChecked />
+        <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days Tags" />
         <div className="h-auto! tab-content bg-black">
-          <Last30DaysChart showTags={true}/>
+          <Last30DaysChart showTags={true} timers={state.timers} />
         </div>
 
         {/* <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="Daily" />
@@ -185,56 +221,66 @@ function App() {
             <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
             <span style={{ "--value": formatSeconds(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatSeconds(state.currentTimer.remaining_time || 0)}</span>
           </h1>
-          <p className="text-center">{state.currentTimer.task}</p>
+          <p className={cn(
+            "text-center",
+            state.currentTimer.task ? "opacity-100" : "opacity-20"
+          )}>{state.currentTimer.task || 'task title empty'}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
+            {state.currentTimer.tags.length === 0 && <p className="text-center opacity-20">tags empty</p>}
             {state.currentTimer.tags.map((tag, index) =>
-              // <span key={index} className="relative cursor-pointer group px-2 py-1 bg-white/20 rounded-sm">
-              //   {tag}
-              //   <button
-              //     className="cursor-pointer absolute block sm:hidden sm:group-hover:block -top-2 -right-2 bg-red-500 text-white rounded-full text-xs px-1 hover:bg-red-600"
-              //     onClick={() => removeTag(tag)}>
-              //     x
-              //   </button>
-              // </span>
-              <span className="badge badge-md relative cursor-pointer group bg-transparent text-white">
+              <span key={index} className="badge badge-md relative cursor-pointer group bg-transparent text-white">
                 {tag}
                 <span onClick={() => removeTag(tag)} className="hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
               </span>
             )}
           </div>
-          <input disabled={state.currentTimer.status === 'ACTIVE'} type="text" className={cn(
-            "p-2 w-full rounded",
-            state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
-          )} value={state.currentTimer.newTask} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value } }))} onKeyDown={addTask} placeholder="add task, press enter to add" />
-          <input disabled={state.currentTimer.status === 'ACTIVE'} type="text" className={cn(
-            "p-2 w-full rounded",
-            state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
-          )} value={state.currentTimer.newTag} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))} onKeyDown={addTag} placeholder="add tag, press enter to add" />
+          <input
+            disabled={state.currentTimer.status === 'ACTIVE'}
+            type="text"
+            className={cn(
+              "p-2 w-full rounded",
+              state.currentTimer.status === 'ACTIVE' && "hidden"
+            )}
+            value={state.currentTimer.newTask}
+            onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value, task: e.target.value } }))}
+            onKeyDown={addTask}
+            placeholder="add task title" />
+          <input
+            disabled={state.currentTimer.status === 'ACTIVE'}
+            type="text"
+            className={cn(
+              "p-2 w-full rounded",
+              state.currentTimer.status === 'ACTIVE' && "hidden"
+            )} value={state.currentTimer.newTag} onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))} onKeyDown={addTag} placeholder="add tag(s), press enter to add" />
           {/* <button onClick={toggleTimer} className={`w-full p-4 text-4xl bg-white/50 cursor-pointer hover:bg-white/30 rounded`}>
             {state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}
           </button> */}
           <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
+          {state.currentTimer.status === 'ACTIVE' && <button onClick={completeTimer} className="btn btn-outline">complete</button>}
         </div>
       </div>
       {/* completed timers */}
       <div className={cn(
-        "w-full h-full p-10 flex flex-col gap-4 justify-center opacity-50 hover:opacity-100",
+        "w-full h-full p-10 flex items-center opacity-20 hover:opacity-100",
         state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
       )}>
-        {state.timers.map(timer => (
-          <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono">
-            <button onClick={() => removeTimer(timer.id)} className="cursor-pointer hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
+        <div className="w-full justify-center max-h-[500px] overflow-scroll py-5">
+          {state.timers.map(timer => (
+            <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono">
+              <button onClick={() => removeTimer(timer.id)} className="cursor-pointer hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
 
-            <div className="flex w-full justify-between">
-              <p>{timer.task || 'task'}</p>
-              <p>{formatTime(timer.duration)}</p>
+              <div className="flex w-full justify-between">
+                <p>{timer.task || 'some task'}</p>
+                <p>{formatTime(timer.duration)}</p>
+              </div>
+              <div className="flex w-full justify-between">
+                <p>[{timer.tags.join(',')}]</p>
+                <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
+              </div>
             </div>
-            <div className="flex w-full justify-between">
-              <p>{timer.status.toLowerCase()}</p>
-              <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
       </div>
 
 
