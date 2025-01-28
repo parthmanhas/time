@@ -35,10 +35,10 @@ function App() {
   };
 
 
-  // without id because id getting cached
+  // static id because id getting cached
   const getNewTimer = () => {
     return {
-      id: 'current-timer',
+      id: uuidv4(),
       duration: 600,
       remaining_time: 600,
       status: 'PAUSED' as TimerStatus,
@@ -73,19 +73,19 @@ function App() {
   const workerRef = useRef<Worker | null>(null);
 
   const toggleTimer = () => {
+    
     setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: prev.currentTimer.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' } }));
     workerRef.current?.postMessage({
       type: state.currentTimer.status === 'ACTIVE' ? 'STOP_TIMER' : 'START_TIMER',
       payload: { id: state.currentTimer.id, remaining_time: state.currentTimer.remaining_time },
     });
   }
-
+  
   const saveTimer = async (timer: Timer) => {
     // assign an id during save
     const { newTask, newTag, ...rest } = timer;
     const newTimer: Omit<Timer, 'newTask' | 'newTag'> = {
       ...rest,
-      id: uuidv4(),
       status: 'COMPLETED' as TimerStatus,
       completed_at: new Date().toISOString(),
       task: timer.newTask,
@@ -135,8 +135,7 @@ function App() {
     saveTimer(state.currentTimer);
     resetCurrentTimer();
     workerRef.current?.postMessage({
-      type: "STOP_TIMER",
-      payload: { remaining_time: 0 },
+      type: "STOP_TIMER"
     });
   }
 
