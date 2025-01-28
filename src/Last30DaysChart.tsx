@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
     BarChart,
     Bar,
@@ -10,37 +9,70 @@ import {
     CartesianGrid,
 } from "recharts";
 import dayjs from "dayjs";
+import { Timer } from "./App";
 
 // Generate mock data for the last 30 days with dynamic tags
-const generateLast30DaysDataWithTags = (tags) => {
+const generateLast30DaysDataWithTags = (timers: Timer[]) => {
     return Array.from({ length: 30 }, (_, i) => {
         const date = dayjs().subtract(i, "day").format("YYYY-MM-DD");
-        const dataForTags = tags.reduce((acc, tag) => {
-            acc[tag] = Math.random() > 0.5 ? Math.floor(Math.random() * 3) : 0; // Random hours per tag
+        const dateTimers = timers.filter(timer => dayjs(timer.completed_at).isSame(date, 'day'));
+        const dataForTags = dateTimers.reduce((acc, timer) => {
+            for (const tag of timer.tags) {
+                if (acc[tag]) acc[tag] += timer.duration;
+                else acc[tag] = timer.duration
+            }
             return acc;
         }, {});
-        const totalTime = Object.values(dataForTags).reduce((sum, val) => sum + val, 0);
-        return { date, totalTime, ...dataForTags }; // Combine date, total time, and tag data
+        const formatSecondsToDecimalHours = (seconds: number) => {
+            return (seconds / 3600).toFixed(2)
+        }
+        const tagsInDecimalHours = Object.fromEntries(
+            Object.entries(dataForTags).map(([tag, timeInSeconds]) => [tag, formatSecondsToDecimalHours(timeInSeconds)])
+        );
+        return { date, ...tagsInDecimalHours }; // Combine date, total time, and tag data
+
     }).reverse(); // Reverse to show the oldest date first
 };
 
-// Example dynamic tags
-const tags = ["Work", "Study", "Exercise", "Leisure", "SideProject"];
-const data = generateLast30DaysDataWithTags(tags);
+const generateLast30DaysDataWithoutTags = (timers: Timer[]) => {
+    return Array.from({ length: 30 }, (_, i) => {
+        const date = dayjs().subtract(i, "day").format("YYYY-MM-DD");
+        const totalTime = timers
+            .filter(timer => dayjs(timer.completed_at).isSame(date, 'day'))
+            .reduce((acc, timer) => {
+                if (!acc[date]) acc[date] = 0;
+                acc[date] += timer.status === 'COMPLETED' ? timer.duration : 0;
+                return acc;
+            }, {});
+        const totalTimeInHours = (totalTime[date] / 3600).toFixed(2);
+        return { date, totalTime: parseFloat(totalTimeInHours) || 0 }; // Combine date, total time, and tag data
+    }).reverse(); // Reverse to show the oldest date first
+};
 
-const Last30DaysChart = ({ className, showTags = false }: { className?: string, showTags?: boolean }) => {
+const decimalToMinutes = (decimalHours: number) => {
+    const hours = Math.floor(decimalHours); // Whole hours
+    const minutes = Math.round((decimalHours - hours) * 60); // Remaining minutes
+    if (minutes === 0) return `${hours} hr`
+    if (hours === 0) return `${minutes} min`
+    return `${hours} hr ${minutes} min`;
+};
+
+const Last30DaysChart = ({ className, showTags = false, timers }: { className?: string, showTags?: boolean, timers: Timer[] }) => {
     // const [showTags, setShowTags] = useState(tags); // Toggle state for tags
+
+    let data = null;
+    let uniqueTags: string[] = [];
+
+    if (showTags === true) {
+        data = generateLast30DaysDataWithTags(timers);
+        console.log(data)
+        uniqueTags = Array.from(new Set(Object.values(data).flatMap(obj => Object.keys(obj)))).filter(tag => tag !== 'totalTime' && tag !== 'date');
+    } else {
+        data = generateLast30DaysDataWithoutTags(timers);
+    }
 
     return (
         <div className={`w-full h-[500px] ${className}`}>
-            {/* <div style={{ marginBottom: "20px", textAlign: "center" }}>
-                <input
-                    onChange={e => setShowTags(e.currentTarget.checked)}
-                    type="checkbox"
-                    className="toggle border-white bg-black checked:bg-black text-white"
-                />
-            </div> */}
-
             <ResponsiveContainer>
                 <BarChart
                     layout="vertical"
@@ -68,7 +100,7 @@ const Last30DaysChart = ({ className, showTags = false }: { className?: string, 
                     // interval={0}
                     />
                     <Tooltip
-                        formatter={(value, name) => (value > 0 ? `${value} hrs` : null)}
+                        formatter={(value, name) => (value > 0 ? `${decimalToMinutes(value)}` : null)}
                         content={({ payload }) => {
                             if (!payload || payload.length === 0) return null;
                             if (!showTags) {
@@ -76,7 +108,7 @@ const Last30DaysChart = ({ className, showTags = false }: { className?: string, 
                                 return (
                                     <div className="bg-black rounded border-2 border-slate-300 p-2">
                                         <p>{`Date: ${payload[0]?.payload?.date || ""}`}</p>
-                                        <p>{`Total Time: ${payload[0]?.value} hrs`}</p>
+                                        <p>{`Total Time: ${decimalToMinutes(parseFloat(payload[0]?.value))}`}</p>
                                     </div>
                                 );
                             }
@@ -85,18 +117,20 @@ const Last30DaysChart = ({ className, showTags = false }: { className?: string, 
                             return (
                                 <div className="bg-black rounded border-2 border-slate-300 p-2">
                                     <p>{`Date: ${validTags[0]?.payload?.date || ""}`}</p>
-                                    {validTags.map((entry) => (
-                                        <p key={entry.name} style={{ color: entry.color }}>
-                                            {entry.name}: {entry.value} hrs
-                                        </p>
-                                    ))}
+                                    {validTags.map((entry) => {
+                                        return (
+                                            <p key={entry.name} style={{ color: entry.color }}>
+                                                {entry.name}: {decimalToMinutes(entry.value)}
+                                            </p>
+                                        )
+                                    })}
                                 </div>
                             );
                         }}
                     />
                     <Legend />
                     {showTags
-                        ? tags.map((tag, index) => (
+                        ? uniqueTags.map((tag, index) => (
                             <Bar
                                 key={tag}
                                 dataKey={tag}
