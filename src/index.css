@@ -4,6 +4,12 @@
 
 @plugin 'tailwindcss-animate';
 
+.anonymous-pro-regular {
+  font-family: "Anonymous Pro", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
@@ -27,14 +33,17 @@
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
@@ -50,6 +59,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
   *,
   ::after,
   ::before,
@@ -86,8 +96,7 @@ body {
   min-height: 100vh;
 }
 
-@layer utilities {
-}
+@layer utilities {}
 
 @layer base {
   :root {
@@ -101,6 +110,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
