@@ -49,7 +49,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 
     return (
         <div className="flex justify-center overflow-scroll">
-            <div className="flex flex-wrap gap-2 max-h-[300px] max-w-[350px]">
+            <div className="flex flex-wrap gap-2 h-full max-w-[350px]">
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((i) => {
                     return (
                         <div key={i} className="flex flex-col gap-2">

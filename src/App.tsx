@@ -6,6 +6,10 @@ import { Timer } from "./components/timer";
 import { formatTime } from "./lib";
 import { CompletedTimers } from "./components/completed-timers";
 import { ChartsRoutines } from "./components/charts-routines";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
+import Last30DaysChart from "./Last30DaysChart";
+import { Routines } from "./components/routines";
+import { cn } from "./lib/utils";
 
 function App() {
 
