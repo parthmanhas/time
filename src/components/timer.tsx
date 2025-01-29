@@ -86,7 +86,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
             </div>
-            <h1 className="text-[7rem] sm:text-[8rem] countdown anonymous-pro-regular justify-center">
+            <h1 className="text-[7rem] sm:text-[8rem] countdown noto-sans-mono-400 justify-center">
                 <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
                 <span style={{ "--value": formatSeconds(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatSeconds(state.currentTimer.remaining_time || 0)}</span>
             </h1>

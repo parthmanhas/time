@@ -4,11 +4,16 @@
 
 @plugin 'tailwindcss-animate';
 
-.anonymous-pro-regular {
-  font-family: "Anonymous Pro", serif;
+
+.noto-sans-mono-400 {
+  font-family: "Noto Sans Mono", serif;
+  font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
+  font-variation-settings:
+    "wdth" 100;
 }
+
 
 @custom-variant dark (&:is(.dark *));
 
