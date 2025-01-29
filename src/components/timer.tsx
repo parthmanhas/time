@@ -99,7 +99,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
         <div className="flex flex-col gap-2 md:gap-3 w-full max-w-sm px-4 md:px-0">
             {/* add time */}
             <div className="flex w-full justify-between gap-2 md:gap-3">
-                <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1)} className="btn btn-outline text-lg md:text-2xl">+10</button>
+                <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(600)} className="btn btn-outline text-lg md:text-2xl">+10</button>
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1200)} className="btn btn-outline text-lg md:text-2xl">+20</button>
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
