@@ -205,7 +205,7 @@ export const updateCompletions = (name: string, completions: string[]): Promise<
 }
 
 export const toggleRoutineCompletion = async (name: string, date: string): Promise<string[]> => {
-    const completions = (await getRoutineCompletions<string>(name)).flatMap((c) => c);
+    const completions = (await getRoutineCompletions<string>(name) || []).flatMap((c) => c);
     let updatedCompletions: string[] = [];
     const index = completions.indexOf(date);
     if (index > -1) {
