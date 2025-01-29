@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { cn } from "../utils";
 import { useEffect, useState } from "react";
 import { getRoutineCompletions, toggleRoutineCompletion } from "../db";
+import { Edit } from "lucide-react";
 
 const generateCurrentYearDates = () => {
     const startOfYear = dayjs().startOf('year');
@@ -24,6 +25,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
     const dates = generateCurrentYearDates();
     const [selectedDate, setSelectedDate] = useState<string | null>();
     const [completedDates, setCompletedDates] = useState<string[]>([]);
+    const [editing, setEditing] = useState(false);
 
     useEffect(() => {
         if (!dbReady) return;
@@ -40,7 +42,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
     }, [name, dbReady])
 
     const toggleRoutine = async (date: string) => {
-        if (dayjs(date).isSame(new Date, 'day')) {
+        if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
             console.log('toggleRoutine', date)
             const updatedCompletions = await toggleRoutineCompletion(name, date) as string[];
             setCompletedDates(updatedCompletions)
@@ -74,6 +76,14 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                         </div>
                     )
                 })}
+                <div
+                    onClick={() => setEditing(!editing)}
+                    className="flex justify-end w-full cursor-pointer">
+                    <Edit className={cn(
+                        editing && "text-amber-300",
+                        "hover:text-amber-300"
+                    )} />
+                </div>
             </div>
         </div>
     )

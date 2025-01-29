@@ -178,16 +178,49 @@ export const deleteRoutineCompletion = (name: string): Promise<boolean> => {
     });
 }
 
-export const toggleRoutineCompletion = async <T>(name: string, date: string): Promise<T[]> => {
-    const completions = await getRoutineCompletions(name) as string[];
+export const updateCompletions = (name: string, completions: string[]): Promise<boolean> => {
+    let request: IDBOpenDBRequest;
+    let db: IDBDatabase;
+    const version = VERSION;
+    return new Promise((resolve) => {
+        request = indexedDB.open(TIMERS_DB, version);
+
+        request.onsuccess = () => {
+            if (request.readyState === 'pending') return;
+            db = request.result;
+            const tx = db.transaction(ROUTINES_COMPLETION_STORE, 'readwrite');
+            const store = tx.objectStore(ROUTINES_COMPLETION_STORE);
+            const res = store.put(completions, name);
+
+            res.onsuccess = () => {
+                if (request.readyState === 'pending') return;
+                resolve(true);
+            };
+            res.onerror = () => {
+                if (request.readyState === 'pending') return;
+                resolve(false);
+            }
+        };
+    });
+}
+
+export const toggleRoutineCompletion = async (name: string, date: string): Promise<string[]> => {
+    const completions = (await getRoutineCompletions<string>(name)).flatMap((c) => c);
+    let updatedCompletions: string[] = [];
     const index = completions.indexOf(date);
     if (index > -1) {
-        await deleteRoutineCompletion(name)
+        //present -> filter
+        updatedCompletions = completions.filter((d) => d !== date);
+        // await deleteRoutineCompletion(name)
     } else {
-        await completeRoutine(name, date)
+        //not present -> add
+        updatedCompletions = [...completions, date];
     }
+    await updateCompletions(name, updatedCompletions)
     // return updated completions
-    return getRoutineCompletions(name);
+    return new Promise((resolve) => {
+        resolve(updatedCompletions);
+    });
 }
 
 export const getRoutineCompletions = <T>(name: string): Promise<T[]> => {
@@ -202,7 +235,7 @@ export const getRoutineCompletions = <T>(name: string): Promise<T[]> => {
             db = request.result;
             const tx = db.transaction(ROUTINES_COMPLETION_STORE, 'readonly');
             const store = tx.objectStore(ROUTINES_COMPLETION_STORE);
-            const res = store.getAll(name);
+            const res = store.get(name);
             res.onsuccess = () => {
                 resolve(res.result);
             };
