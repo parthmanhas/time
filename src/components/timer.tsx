@@ -35,6 +35,14 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
         }
     }
 
+    const addTagButtonClick = () => {
+        if (state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1 && state.currentTimer.newTag !== '') {
+            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
+        } else {
+            console.error('tag already exists or empty')
+        }
+    }
+
     const removeTag = (name: string) => {
         setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: prev.currentTimer.tags.filter(t => t !== name) } }))
     }
@@ -126,7 +134,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))}
                     onKeyDown={addTag}
                     placeholder="add tag(s), press enter to add" />
-                <Button size="icon"><Plus /></Button>
+                <Button size="icon" onClick={() => addTagButtonClick()}><Plus /></Button>
             </div>
             <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
             {state.currentTimer.status === 'PAUSED' && state.currentTimer.remaining_time !== state.currentTimer.duration && <button onClick={resetCurrentTimer} className="btn btn-outline">reset</button>}

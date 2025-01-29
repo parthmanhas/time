@@ -12,11 +12,12 @@ type ChartsRoutinesProps = {
     state: TimerState,
     setState: React.Dispatch<React.SetStateAction<TimerState>>,
     dbReady: boolean,
-    addRoutine: (e?: React.KeyboardEvent<HTMLInputElement>) => void
+    addRoutine: (e: React.KeyboardEvent<HTMLInputElement>) => void
+    addRoutineButtonClick: () => void
     clearRoutine: (routine: string) => void
 }
 
-export const ChartsRoutines = ({ className, mobile = false, state, dbReady, setState, addRoutine, clearRoutine }: ChartsRoutinesProps) => {
+export const ChartsRoutines = ({ className, mobile = false, state, dbReady, setState, addRoutine, addRoutineButtonClick, clearRoutine }: ChartsRoutinesProps) => {
     return (
         <div role="tablist" className={
             cn(
@@ -57,7 +58,7 @@ export const ChartsRoutines = ({ className, mobile = false, state, dbReady, setS
                             className="p-2 rounded"
                             placeholder="add routine name"
                         />
-                        <Button size="icon" className="cursor-pointer" onClick={() => addRoutine()}><Plus /></Button>
+                        <Button size="icon" className="cursor-pointer" onClick={() => addRoutineButtonClick()}><Plus /></Button>
                     </div>
                     {state.routines.length > 0 ?
                         <>

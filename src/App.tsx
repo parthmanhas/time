@@ -74,12 +74,22 @@ function App() {
     setState(prev => ({ ...prev, timers: prev.timers.filter(timer => timer.id !== timerId) }))
   }
 
-  const addRoutine = async (key?: React.KeyboardEvent<HTMLInputElement>) => {
-    if (key?.code === 'Enter') {
+  const addRoutine = async (key: React.KeyboardEvent<HTMLInputElement>) => {
+    if (key.code === 'Enter') {
       setState(prev => ({ ...prev, newRoutine: '' }));
       await saveRoutine(state.newRoutine);
       await refreshRoutines();
     }
+  }
+
+  const addRoutineButtonClick = async () => {
+    if (state.newRoutine === '') {
+      console.error('empty routine name');
+      return;
+    };
+    setState(prev => ({ ...prev, newRoutine: '' }));
+    await saveRoutine(state.newRoutine);
+    await refreshRoutines();
   }
 
   const clearRoutine = async (routine: string) => {
@@ -156,6 +166,7 @@ function App() {
         setState={setState}
         addRoutine={addRoutine}
         clearRoutine={clearRoutine}
+        addRoutineButtonClick={addRoutineButtonClick}
       />
       {/* completed timers */}
       <CompletedTimers
@@ -172,6 +183,7 @@ function App() {
         setState={setState}
         addRoutine={addRoutine}
         clearRoutine={clearRoutine}
+        addRoutineButtonClick={addRoutineButtonClick}
       />
       {/* timer */}
       <Timer
