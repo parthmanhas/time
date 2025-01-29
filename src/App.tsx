@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializeDB, saveRoutine } from "./db";
-import { TimerModel, TimerState } from "./types";
+import { TimerModel, TimerState, TimerStatus } from "./types";
 import { Timer } from "./components/timer";
 import { formatTime } from "./lib";
 import { CompletedTimers } from "./components/completed-timers";
 import { ChartsRoutines } from "./components/charts-routines";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
-import Last30DaysChart from "./Last30DaysChart";
-import { Routines } from "./components/routines";
-import { cn } from "./lib/utils";
 
 function App() {
 
@@ -50,8 +46,9 @@ function App() {
 
   const saveTimer = async (timer: TimerModel) => {
     // assign an id during save
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { newTask, newTag, ...rest } = timer;
-    const newTimer: Omit<Timer, 'newTask' | 'newTag'> = {
+    const newTimer: Omit<TimerModel, 'newTask' | 'newTag'> = {
       ...rest,
       status: 'COMPLETED' as TimerStatus,
       completed_at: new Date().toISOString(),
@@ -77,8 +74,8 @@ function App() {
     setState(prev => ({ ...prev, timers: prev.timers.filter(timer => timer.id !== timerId) }))
   }
 
-  const addRoutine = async (key: React.KeyboardEvent<HTMLInputElement>) => {
-    if (key.code === 'Enter') {
+  const addRoutine = async (key?: React.KeyboardEvent<HTMLInputElement>) => {
+    if (key?.code === 'Enter') {
       setState(prev => ({ ...prev, newRoutine: '' }));
       await saveRoutine(state.newRoutine);
       await refreshRoutines();

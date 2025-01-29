@@ -9,14 +9,14 @@ import {
     CartesianGrid,
 } from "recharts";
 import dayjs from "dayjs";
-import { Timer } from "./App";
+import { TimerModel } from "./types";
 
 // Generate mock data for the last 30 days with dynamic tags
-const generateLast30DaysDataWithTags = (timers: Timer[]) => {
+const generateLast30DaysDataWithTags = (timers: TimerModel[]) => {
     return Array.from({ length: 30 }, (_, i) => {
         const date = dayjs().subtract(i, "day").format("YYYY-MM-DD");
         const dateTimers = timers.filter(timer => dayjs(timer.completed_at).isSame(date, 'day'));
-        const dataForTags = dateTimers.reduce((acc, timer) => {
+        const dataForTags = dateTimers.reduce((acc: Record<string, number>, timer) => {
             for (const tag of timer.tags) {
                 if (acc[tag]) acc[tag] += timer.duration;
                 else acc[tag] = timer.duration
@@ -34,12 +34,12 @@ const generateLast30DaysDataWithTags = (timers: Timer[]) => {
     }).reverse(); // Reverse to show the oldest date first
 };
 
-const generateLast30DaysDataWithoutTags = (timers: Timer[]) => {
+const generateLast30DaysDataWithoutTags = (timers: TimerModel[]) => {
     return Array.from({ length: 30 }, (_, i) => {
         const date = dayjs().subtract(i, "day").format("YYYY-MM-DD");
         const totalTime = timers
             .filter(timer => dayjs(timer.completed_at).isSame(date, 'day'))
-            .reduce((acc, timer) => {
+            .reduce<Record<string, number>>((acc, timer) => {
                 if (!acc[date]) acc[date] = 0;
                 acc[date] += timer.status === 'COMPLETED' ? timer.duration : 0;
                 return acc;
@@ -57,7 +57,7 @@ const decimalToMinutes = (decimalHours: number) => {
     return `${hours} hr ${minutes} min`;
 };
 
-const Last30DaysChart = ({ className = '', showTags = false, timers }: { className?: string, showTags?: boolean, timers: Timer[] }) => {
+const Last30DaysChart = ({ className = '', showTags = false, timers }: { className?: string, showTags?: boolean, timers: TimerModel[] }) => {
     // const [showTags, setShowTags] = useState(tags); // Toggle state for tags
 
     let data = null;
@@ -99,7 +99,7 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                     // interval={0}
                     />
                     <Tooltip
-                        formatter={(value, name) => (value > 0 ? `${decimalToMinutes(value)}` : null)}
+                        formatter={(value) => (typeof value === 'number' && value > 0 ? `${decimalToMinutes(value)}` : null)}
                         content={({ payload }) => {
                             if (!payload || payload.length === 0) return null;
                             if (!showTags) {
@@ -107,19 +107,19 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                                 return (
                                     <div className="bg-black rounded border-2 border-slate-300 p-2">
                                         <p>{`Date: ${payload[0]?.payload?.date || ""}`}</p>
-                                        <p>{`Total Time: ${decimalToMinutes(parseFloat(payload[0]?.value))}`}</p>
+                                        <p>{`Total Time: ${typeof payload[0]?.value === 'number' ? decimalToMinutes(payload[0].value) : '0 min'}`}</p>
                                     </div>
                                 );
                             }
                             // For with tags, display tags with time > 0
-                            const validTags = payload.filter((entry) => entry.value > 0);
+                            const validTags = payload.filter((entry) => typeof entry.value === 'number' && entry.value > 0);
                             return (
                                 <div className="bg-black rounded border-2 border-slate-300 p-2">
                                     <p>{`Date: ${validTags[0]?.payload?.date || ""}`}</p>
                                     {validTags.map((entry) => {
                                         return (
                                             <p key={entry.name} style={{ color: entry.color }}>
-                                                {entry.name}: {decimalToMinutes(entry.value)}
+                                                {entry.name}: {typeof entry.value === 'number' ? decimalToMinutes(entry.value) : '0 min'}
                                             </p>
                                         )
                                     })}

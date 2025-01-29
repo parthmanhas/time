@@ -1,4 +1,4 @@
-import { Timer } from "./App";
+import { TimerModel } from "./types";
 
 const VERSION = 1;
 
@@ -43,13 +43,13 @@ export const initializeDB = (): Promise<boolean> => {
         }
 
         request.onerror = (event) => {
-            console.error('Error opening database:', event?.target?.error);
+            console.error('Error opening database:', (event.target as IDBRequest).error);
             resolve(false);
         }
     })
 }
 
-export const addTimer = (timer: Omit<Timer, 'newTask' | 'newTag'>): Promise<boolean> => {
+export const addTimer = (timer: Omit<TimerModel, 'newTask' | 'newTag'>): Promise<boolean> => {
     let request: IDBOpenDBRequest;
     let db: IDBDatabase;
     const version = VERSION;
@@ -210,7 +210,7 @@ export const getRoutineCompletions = <T>(name: string): Promise<T[]> => {
 
         request.onerror = (event) => {
             if (request.readyState === 'pending') return;
-            console.error('Error getRoutineCompletions:', event?.target?.error);
+            console.error('Error getRoutineCompletions:', (event.target as IDBRequest).error);
             resolve([]);
         }
     });
@@ -293,13 +293,13 @@ export const deleteRoutine = (name: string): Promise<boolean> => {
                 };
                 res2.onerror = (event) => {
                     if (request.readyState === 'pending') return;
-                    console.error('Error deleting routine completions:', event?.target?.error);
+                    console.error('Error deleting routine completions:', (event.target as IDBRequest).error);
                     resolve(false);
                 }
             };
             res.onerror = (event) => {
                 if (request.readyState === 'pending') return;
-                console.error('Error deleting routine:', event?.target?.error);
+                console.error('Error deleting routine:', (event.target as IDBRequest).error);
                 resolve(false);
             }
 
@@ -308,7 +308,7 @@ export const deleteRoutine = (name: string): Promise<boolean> => {
     });
 }
 
-export const exportData = async (dbName, storeName) => {
+export const exportData = async (dbName: string, storeName: string) => {
     const version = VERSION;
     const request = indexedDB.open(dbName, version);
     request.onsuccess = () => {
