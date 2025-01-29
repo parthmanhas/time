@@ -11,6 +11,7 @@ const formatSeconds = (time: number) => {
 
 type TimerProps = {
     className?: string,
+    mobile?: boolean
     state: TimerState,
     setState: React.Dispatch<React.SetStateAction<TimerState>>,
     saveTimer: (timer: TimerModel) => void,
@@ -18,7 +19,7 @@ type TimerProps = {
     workerRef: React.MutableRefObject<Worker | null>
 }
 
-export const Timer = ({ className, state, setState, saveTimer, getNewTimer, workerRef }: TimerProps) => {
+export const Timer = ({ className, mobile = false, state, setState, saveTimer, getNewTimer, workerRef }: TimerProps) => {
 
     const selectTime = (duration: number) => {
         setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, duration, remaining_time: duration, status: 'PAUSED' } }))
@@ -64,7 +65,8 @@ export const Timer = ({ className, state, setState, saveTimer, getNewTimer, work
 
     return <div className={cn(
         className && className,
-        "flex items-center justify-center w-full h-full"
+        mobile && "h-screen flex items-center justify-center sm:hidden",
+        !mobile && "hidden sm:flex items-center justify-center w-full",
     )}>
         <div className="flex flex-col gap-2 md:gap-3 w-full max-w-sm px-4 md:px-0">
             {/* add time */}
@@ -74,7 +76,7 @@ export const Timer = ({ className, state, setState, saveTimer, getNewTimer, work
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
                 <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
             </div>
-            <h1 className="text-6xl md:text-9xl countdown font-mono text-center">
+            <h1 className="text-8xl countdown font-mono justify-center">
                 <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
                 <span style={{ "--value": formatSeconds(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatSeconds(state.currentTimer.remaining_time || 0)}</span>
             </h1>
@@ -87,7 +89,7 @@ export const Timer = ({ className, state, setState, saveTimer, getNewTimer, work
                 {state.currentTimer.tags.map((tag, index) =>
                     <span key={index} className="badge badge-md relative cursor-pointer group bg-transparent text-white">
                         {tag}
-                        <span onClick={() => removeTag(tag)} className="hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
+                        <span onClick={() => removeTag(tag)} className="sm:hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
                     </span>
                 )}
             </div>

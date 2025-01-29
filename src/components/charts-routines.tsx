@@ -5,6 +5,7 @@ import { Routines } from "./routines"
 
 type ChartsRoutinesProps = {
     className?: string,
+    mobile?: boolean,
     state: TimerState,
     setState: React.Dispatch<React.SetStateAction<TimerState>>,
     dbReady: boolean,
@@ -12,12 +13,13 @@ type ChartsRoutinesProps = {
     clearRoutine: (routine: string) => void
 }
 
-export const ChartsRoutines = ({ className, state, dbReady, setState, addRoutine, clearRoutine }: ChartsRoutinesProps) => {
+export const ChartsRoutines = ({ className, mobile = false, state, dbReady, setState, addRoutine, clearRoutine }: ChartsRoutinesProps) => {
     return (
         <div role="tablist" className={
             cn(
                 className && className,
-                "flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100 h-full"
+                mobile && "h-screen sm:hidden",
+                !mobile && "hidden sm:h-full sm:flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100",
             )
         }>
             <input type="radio" name="my_tabs_2" role="tab" className="tab" aria-label="30 Days" defaultChecked />

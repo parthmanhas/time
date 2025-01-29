@@ -140,17 +140,55 @@ function App() {
   }, []);
 
   return (
-    <div className="w-screen sm:h-screen flex flex-col md:grid md:grid-cols-3 bg-black text-white overflow-hidden">
+    <div className="w-screen sm:h-screen flex flex-col sm:grid sm:grid-cols-3 bg-black text-white overflow-hidden">
+      {/* mobile */}
       {/* timer */}
+      <Timer
+        mobile={true}
+        state={state}
+        setState={setState}
+        getNewTimer={getNewTimer}
+        saveTimer={saveTimer}
+        workerRef={workerRef}
+      />
       {/* chart */}
+      <ChartsRoutines
+        mobile={true}
+        state={state}
+        dbReady={dbReady}
+        setState={setState}
+        addRoutine={addRoutine}
+        clearRoutine={clearRoutine}
+      />
       {/* completed timers */}
+      <CompletedTimers
+        mobile={true}
+        state={state}
+        removeTimer={removeTimer}
+      />
 
+      {/* above mobile */}
       {/* chart */}
-      <ChartsRoutines state={state} dbReady={dbReady} setState={setState} addRoutine={addRoutine} clearRoutine={clearRoutine} />
+      <ChartsRoutines
+        state={state}
+        dbReady={dbReady}
+        setState={setState}
+        addRoutine={addRoutine}
+        clearRoutine={clearRoutine}
+      />
       {/* timer */}
-      <Timer state={state} setState={setState} getNewTimer={getNewTimer} saveTimer={saveTimer} workerRef={workerRef} />
+      <Timer
+        state={state}
+        setState={setState}
+        getNewTimer={getNewTimer}
+        saveTimer={saveTimer}
+        workerRef={workerRef}
+      />
       {/* completed timers */}
-      <CompletedTimers state={state} removeTimer={removeTimer} />
+      <CompletedTimers
+        state={state}
+        removeTimer={removeTimer}
+      />
 
 
     </div>
