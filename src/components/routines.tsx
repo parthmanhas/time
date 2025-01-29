@@ -43,7 +43,6 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 
     const toggleRoutine = async (date: string) => {
         if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
-            console.log('toggleRoutine', date)
             const updatedCompletions = await toggleRoutineCompletion(name, date) as string[];
             setCompletedDates(updatedCompletions)
         };

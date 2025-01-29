@@ -88,7 +88,7 @@ export const getTimers = <T>(): Promise<T[]> => {
             const tx = db.transaction(TIMERS_STORE, 'readonly');
             const store = tx.objectStore(TIMERS_STORE);
             const res = store.getAll();
-            // console.log('request.onsuccess - getTimers');
+            console.log('request.onsuccess - getTimers');
             res.onsuccess = () => {
                 resolve(res.result);
             };
