@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { cn } from "./utils";
 import Last30DaysChart from "./Last30DaysChart";
-import { addRoutine, addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializeDB, saveRoutine } from "./db";
+import { addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializeDB, saveRoutine } from "./db";
 import { Routines } from "./components/routines";
+import dayjs from "dayjs";
 
 type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
 
@@ -220,12 +221,12 @@ function App() {
       <div role="tablist" className="flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100">
         <input type="radio" name="my_tabs_2" role="tab" className="tab mt-16" aria-label="30 Days" defaultChecked />
         <div className="tab-content !h-3/4 bg-black">
-          <Last30DaysChart timers={state.timers} />
+          {state.timers.length === 0 ? <div className="flex justify-center pt-16">No data. Start a timer !</div> : <Last30DaysChart timers={state.timers} />}
         </div>
 
         <input type="radio" name="my_tabs_2" role="tab" className="tab mt-16" aria-label="30 Days Tags" />
         <div className="tab-content !h-3/4 bg-black">
-          <Last30DaysChart showTags={true} timers={state.timers} />
+          {state.timers.length === 0 ? <div className="flex justify-center pt-16">No data. Start a timer !</div> : <Last30DaysChart showTags={true} timers={state.timers} />}
         </div>
 
         <input type="radio" name="my_tabs_2" role="tab" className="tab mt-16" aria-label="Routines" />
@@ -285,11 +286,11 @@ function App() {
       <div className="flex items-center justify-center w-full">
         <div className="flex flex-col gap-3">
           {/* add time */}
-          <div className="flex w-full gap-3">
+          <div className="flex w-full justify-between gap-3">
             <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1)} className="btn btn-outline text-2xl">+10</button>
             <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1200)} className="btn btn-outline text-2xl">+20</button>
             <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(1800)} className="btn btn-outline text-2xl">+30</button>
-            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(2400)} className="btn btn-outline text-2xl">+40</button>
+            <button disabled={state.currentTimer.status === 'ACTIVE'} onClick={() => selectTime(3600)} className="btn btn-outline text-2xl">+60</button>
           </div>
           <h1 className="text-9xl countdown font-mono">
             {/* {formatTime(state.currentTimer.remaining_time || 0)} */}
@@ -336,25 +337,29 @@ function App() {
       </div>
       {/* completed timers */}
       <div className={cn(
-        "w-full h-full p-10 flex items-center opacity-20 hover:opacity-100",
+        "w-full h-full p-10 flex items-center justify-center opacity-20 hover:opacity-100",
         state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
       )}>
-        <div className="w-full justify-center max-h-[500px] overflow-scroll py-5">
-          {state.timers.map(timer => (
-            <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono">
-              <button onClick={() => removeTimer(timer.id)} className="cursor-pointer hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
+        {state.timers.length === 0
+          ?
+          <p className="text-center">No timers completed yet</p>
+          :
+          <div className="w-full justify-center max-h-[500px] overflow-scroll py-5">
+            {state.timers.filter(timer => dayjs(timer.completed_at).isSame(new Date(), 'day')).map(timer => (
+              <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono">
+                <button onClick={() => removeTimer(timer.id)} className="cursor-pointer hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
 
-              <div className="flex w-full justify-between">
-                <p>{timer.task || 'some task'}</p>
-                <p>{formatTime(timer.duration)}</p>
+                <div className="flex w-full justify-between">
+                  <p>{timer.task || 'some task'}</p>
+                  <p>{formatTime(timer.duration)}</p>
+                </div>
+                <div className="flex w-full justify-between">
+                  <p>[{timer.tags.join(',')}]</p>
+                  <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
+                </div>
               </div>
-              <div className="flex w-full justify-between">
-                <p>[{timer.tags.join(',')}]</p>
-                <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>}
 
       </div>
 
