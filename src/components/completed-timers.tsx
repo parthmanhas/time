@@ -22,9 +22,14 @@ export const CompletedTimers = ({ className, mobile = false, state, removeTimer 
                 ?
                 <p className="text-center">No timers completed yet</p>
                 :
-                <div className="w-full justify-center max-h-[200px] md:max-h-[500px] overflow-scroll py-2 md:py-5">
+                <div className="w-full justify-center max-h-[500px] overflow-scroll py-2 md:py-5">
                     {state.timers.filter(timer => dayjs(timer.completed_at).isSame(new Date(), 'day')).map(timer => (
-                        <div key={timer.id} className="relative border-white/20 border-b-[1px] p-2 group font-mono text-sm md:text-base">
+                        <div key={timer.id} 
+                        className={cn(
+                            timer.status === 'PAUSED' && "border-l-amber-500",
+                            timer.status === 'COMPLETED' && "border-l-green-500",
+                            "relative border-l-2 border-b-white/20 border-b-[1px] mb-1 p-2 group noto-sans-mono-400 text-sm md:text-base"
+                        )}>
                             <button onClick={() => removeTimer(timer.id)} className="cursor-pointer sm:hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
 
                             <div className="flex w-full justify-between">
