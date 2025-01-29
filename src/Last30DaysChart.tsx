@@ -57,7 +57,7 @@ const decimalToMinutes = (decimalHours: number) => {
     return `${hours} hr ${minutes} min`;
 };
 
-const Last30DaysChart = ({ className, showTags = false, timers }: { className?: string, showTags?: boolean, timers: Timer[] }) => {
+const Last30DaysChart = ({ className = '', showTags = false, timers }: { className?: string, showTags?: boolean, timers: Timer[] }) => {
     // const [showTags, setShowTags] = useState(tags); // Toggle state for tags
 
     let data = null;
@@ -65,7 +65,6 @@ const Last30DaysChart = ({ className, showTags = false, timers }: { className?: 
 
     if (showTags === true) {
         data = generateLast30DaysDataWithTags(timers);
-        console.log(data)
         uniqueTags = Array.from(new Set(Object.values(data).flatMap(obj => Object.keys(obj)))).filter(tag => tag !== 'totalTime' && tag !== 'date');
     } else {
         data = generateLast30DaysDataWithoutTags(timers);
