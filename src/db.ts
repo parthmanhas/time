@@ -61,6 +61,7 @@ export const addTimer = (timer: Omit<TimerModel, 'newTask' | 'newTag'>): Promise
             db = request.result;
             const tx = db.transaction(TIMERS_STORE, 'readwrite');
             const timerStore = tx.objectStore(TIMERS_STORE);
+            timerStore.delete(timer.id);
             timerStore.add(timer);
             console.log('timer added');
             resolve(true);

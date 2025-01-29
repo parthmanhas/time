@@ -4,7 +4,7 @@ import { addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializ
 import { TimerModel, TimerState, TimerStatus } from "./types";
 import { Timer } from "./components/timer";
 import { formatTime } from "./lib";
-import { CompletedTimers } from "./components/completed-timers";
+import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
 import { ChartsRoutines } from "./components/charts-routines";
 
 function App() {
@@ -50,9 +50,8 @@ function App() {
     const { newTask, newTag, ...rest } = timer;
     const newTimer: Omit<TimerModel, 'newTask' | 'newTag'> = {
       ...rest,
-      status: 'COMPLETED' as TimerStatus,
       completed_at: new Date().toISOString(),
-      task: timer.newTask,
+      task: timer.newTask || timer.task,
       tags: timer.tags
     }
     await addTimer(newTimer);
@@ -169,10 +168,12 @@ function App() {
         addRoutineButtonClick={addRoutineButtonClick}
       />
       {/* completed timers */}
-      <CompletedTimers
+      <CompletedAndPausedTimers
         mobile={true}
         state={state}
         removeTimer={removeTimer}
+        setState={setState}
+        workerRef={workerRef}
       />
 
       {/* above mobile */}
@@ -194,9 +195,11 @@ function App() {
         workerRef={workerRef}
       />
       {/* completed timers */}
-      <CompletedTimers
+      <CompletedAndPausedTimers
         state={state}
         removeTimer={removeTimer}
+        setState={setState}
+        workerRef={workerRef}
       />
 
 

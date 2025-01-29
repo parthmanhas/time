@@ -66,11 +66,21 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
     }
 
     const completeTimer = () => {
-        saveTimer(state.currentTimer);
+        saveTimer({ ...state.currentTimer, status: 'COMPLETED' });
         resetCurrentTimer();
         workerRef.current?.postMessage({
             type: "STOP_TIMER"
         });
+    }
+
+    const queueTimer = () => {
+        if (state.currentTimer.newTask === '' && state.currentTimer.task === '') {
+            console.error('cannot queue an empty task');
+            return;
+        }
+
+        saveTimer({ ...state.currentTimer, status: 'QUEUED' });
+        resetCurrentTimer();
     }
 
     const resumeTimer = () => {
@@ -134,9 +144,10 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))}
                     onKeyDown={addTag}
                     placeholder="add tag(s), press enter to add" />
-                <Button size="icon" onClick={() => addTagButtonClick()}><Plus /></Button>
+                <Button size="icon" className={cn(state.currentTimer.status === 'ACTIVE' && "hidden")} onClick={() => addTagButtonClick()}><Plus /></Button>
             </div>
             <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
+            {state.currentTimer.status === 'PAUSED' && <button onClick={queueTimer} className="btn btn-outline">do later</button>}
             {state.currentTimer.status === 'PAUSED' && state.currentTimer.remaining_time !== state.currentTimer.duration && <button onClick={resetCurrentTimer} className="btn btn-outline">reset</button>}
             {state.currentTimer.status === 'PAUSED' && state.currentTimer.remaining_time !== state.currentTimer.duration && <button onClick={resumeTimer} className="btn btn-outline">resume</button>}
             {state.currentTimer.status === 'ACTIVE' && <button onClick={completeTimer} className="btn btn-outline">complete</button>}

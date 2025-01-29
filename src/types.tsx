@@ -1,5 +1,5 @@
 
-export type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED';
+export type TimerStatus = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'QUEUED';
 
 export type TimerModel = {
   id: string,
