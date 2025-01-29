@@ -18,7 +18,7 @@ export const ChartsRoutines = ({ className, mobile = false, state, dbReady, setS
         <div role="tablist" className={
             cn(
                 className && className,
-                mobile && "h-screen sm:hidden",
+                mobile && "h-screen sm:hidden border-b",
                 !mobile && "hidden sm:h-full sm:flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100",
             )
         }>

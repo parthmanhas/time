@@ -65,7 +65,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
 
     return <div className={cn(
         className && className,
-        mobile && "h-screen flex items-center justify-center sm:hidden",
+        mobile && "h-screen flex items-center justify-center sm:hidden border-b",
         !mobile && "hidden sm:flex items-center justify-center w-full",
     )}>
         <div className="flex flex-col gap-2 md:gap-3 w-full max-w-sm px-4 md:px-0">

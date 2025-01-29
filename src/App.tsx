@@ -7,7 +7,6 @@ import { formatTime } from "./lib";
 import { CompletedTimers } from "./components/completed-timers";
 import { ChartsRoutines } from "./components/charts-routines";
 
-
 function App() {
 
   const [dbReady, setDbReady] = useState(false);
@@ -18,7 +17,6 @@ function App() {
     await refreshTimers();
     await refreshRoutines();
   };
-
 
   // static id because id getting cached
   const getNewTimer = () => {
@@ -43,8 +41,6 @@ function App() {
     newRoutine: '',
     routines: []
   });
-
-
 
   const workerRef = useRef<Worker | null>(null);
 

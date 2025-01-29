@@ -14,7 +14,7 @@ export const CompletedTimers = ({ className, mobile = false, state, removeTimer 
     return (
         <div className={cn(
             className && className,
-            mobile && "h-screen sm:hidden flex items-center justify-center p-5",
+            mobile && "h-screen sm:hidden flex items-center justify-center p-5 border-b",
             !mobile && "hidden sm:h-full w-full p-10 sm:flex items-center justify-center opacity-20 hover:opacity-100",
             !mobile && state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
         )}>
