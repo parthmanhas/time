@@ -5,6 +5,7 @@ import { cn } from "../utils";
 import { useEffect, useState } from "react";
 import { getRoutineCompletions, toggleRoutineCompletion } from "../db";
 import { Edit } from "lucide-react";
+import confetti from 'canvas-confetti';
 
 const generateCurrentYearDates = () => {
     const startOfYear = dayjs().startOf('year');
@@ -44,7 +45,18 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
     const toggleRoutine = async (date: string) => {
         if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
             const updatedCompletions = await toggleRoutineCompletion(name, date) as string[];
-            setCompletedDates(updatedCompletions)
+            const wasComplete = completedDates.includes(date);
+            setCompletedDates(updatedCompletions);
+
+            // Show confetti only when marking as complete
+            if (!wasComplete && updatedCompletions.includes(date)) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B']
+                });
+            }
         };
     }
 
