@@ -129,7 +129,7 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                             );
                         }}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{bottom: -10}}/>
                     {showTags
                         ? uniqueTags.map((tag, index) => (
                             <Bar
