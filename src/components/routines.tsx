@@ -49,9 +49,9 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
     }
 
     return (
-        <div className="flex justify-center overflow-scroll">
-            <div className="flex flex-wrap gap-2 h-full max-w-[350px]">
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((i) => {
+        <div className="carousel max-w-[350px]">
+            <div className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
+                {Array.from({ length: 3 }, (_, i) => i + 1).map((i) => {
                     return (
                         <div key={i} className="flex flex-col gap-2">
                             <div className="text-center">{dayjs(`2025-${i}-01`).format('MMMM').toLowerCase()}</div>
@@ -62,7 +62,109 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         <div key={date}
                                             onClick={() => toggleRoutine(date)}
                                             className={cn(
-                                                "w-4 h-4 bg-white rounded cursor-pointer",
+                                                "w-5 h-5 bg-white rounded cursor-pointer",
+                                                completedDates.includes(date) && "bg-green-500",
+                                                dayjs(date).isSame(new Date(), 'day') && !completedDates.includes(date) && "bg-yellow-500",
+                                                dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                            )}>
+                                            {/* Add your logic to change the color based on the routine */}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                })}
+                <div
+                    onClick={() => setEditing(!editing)}
+                    className="flex justify-end w-full cursor-pointer">
+                    <Edit className={cn(
+                        editing && "text-amber-300",
+                        "hover:text-amber-300"
+                    )} />
+                </div>
+            </div>
+            <div className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
+                {Array.from({ length: 3 }, (_, i) => i + 4).map((i) => {
+                    return (
+                        <div key={i} className="flex flex-col gap-2">
+                            <div className="text-center">{dayjs(`2025-${i}-01`).format('MMMM').toLowerCase()}</div>
+                            <div className="flex flex-wrap gap-2">
+                                {dates.map((date) => {
+                                    if (dayjs(date).month() + 1 !== i) return null;
+                                    return (
+                                        <div key={date}
+                                            onClick={() => toggleRoutine(date)}
+                                            className={cn(
+                                                "w-5 h-5 bg-white rounded cursor-pointer",
+                                                completedDates.includes(date) && "bg-green-500",
+                                                dayjs(date).isSame(new Date(), 'day') && !completedDates.includes(date) && "bg-yellow-500",
+                                                dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                            )}>
+                                            {/* Add your logic to change the color based on the routine */}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                })}
+                <div
+                    onClick={() => setEditing(!editing)}
+                    className="flex justify-end w-full cursor-pointer">
+                    <Edit className={cn(
+                        editing && "text-amber-300",
+                        "hover:text-amber-300"
+                    )} />
+                </div>
+            </div>
+            <div className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
+                {Array.from({ length: 3 }, (_, i) => i + 7).map((i) => {
+                    return (
+                        <div key={i} className="flex flex-col gap-2">
+                            <div className="text-center">{dayjs(`2025-${i}-01`).format('MMMM').toLowerCase()}</div>
+                            <div className="flex flex-wrap gap-2">
+                                {dates.map((date) => {
+                                    if (dayjs(date).month() + 1 !== i) return null;
+                                    return (
+                                        <div key={date}
+                                            onClick={() => toggleRoutine(date)}
+                                            className={cn(
+                                                "w-5 h-5 bg-white rounded cursor-pointer",
+                                                completedDates.includes(date) && "bg-green-500",
+                                                dayjs(date).isSame(new Date(), 'day') && !completedDates.includes(date) && "bg-yellow-500",
+                                                dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                            )}>
+                                            {/* Add your logic to change the color based on the routine */}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )
+                })}
+                <div
+                    onClick={() => setEditing(!editing)}
+                    className="flex justify-end w-full cursor-pointer">
+                    <Edit className={cn(
+                        editing && "text-amber-300",
+                        "hover:text-amber-300"
+                    )} />
+                </div>
+            </div>
+            <div className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
+                {Array.from({ length: 3 }, (_, i) => i + 10).map((i) => {
+                    return (
+                        <div key={i} className="flex flex-col gap-2">
+                            <div className="text-center">{dayjs(`2025-${i}-01`).format('MMMM').toLowerCase()}</div>
+                            <div className="flex flex-wrap gap-2">
+                                {dates.map((date) => {
+                                    if (dayjs(date).month() + 1 !== i) return null;
+                                    return (
+                                        <div key={date}
+                                            onClick={() => toggleRoutine(date)}
+                                            className={cn(
+                                                "w-5 h-5 bg-white rounded cursor-pointer",
                                                 completedDates.includes(date) && "bg-green-500",
                                                 dayjs(date).isSame(new Date(), 'day') && !completedDates.includes(date) && "bg-yellow-500",
                                                 dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"

@@ -141,7 +141,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                 disabled={state.currentTimer.status === 'ACTIVE'}
                 type="text"
                 className={cn(
-                    "p-2 w-full rounded",
+                    "p-2 w-full rounded border",
                     state.currentTimer.status === 'ACTIVE' && "hidden"
                 )}
                 value={state.currentTimer.newTask}
@@ -153,7 +153,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     disabled={state.currentTimer.status === 'ACTIVE'}
                     type="text"
                     className={cn(
-                        "p-2 w-full rounded",
+                        "p-2 w-full rounded border",
                         state.currentTimer.status === 'ACTIVE' && "hidden"
                     )}
                     value={state.currentTimer.newTag}

@@ -5,11 +5,13 @@ import { TimerModel, TimerState, TimerStatus } from "./types";
 import { Timer } from "./components/timer";
 import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
-import { ChartsRoutines } from "./components/charts-routines";
+import { Charts } from "./components/charts";
+import { RoutinesContainer } from "./components/routines-container";
 
 function App() {
 
   const [dbReady, setDbReady] = useState(false);
+  const [timerSelected, setTimerSelected] = useState(true);
 
   const handleInitDB = async () => {
     await initializeDB();
@@ -158,14 +160,9 @@ function App() {
         workerRef={workerRef}
       />
       {/* chart */}
-      <ChartsRoutines
+      <Charts
         mobile={true}
         state={state}
-        dbReady={dbReady}
-        setState={setState}
-        addRoutine={addRoutine}
-        clearRoutine={clearRoutine}
-        addRoutineButtonClick={addRoutineButtonClick}
       />
       {/* completed timers */}
       <CompletedAndPausedTimers
@@ -178,22 +175,33 @@ function App() {
 
       {/* above mobile */}
       {/* chart */}
-      <ChartsRoutines
+      <Charts
         state={state}
-        dbReady={dbReady}
-        setState={setState}
-        addRoutine={addRoutine}
-        clearRoutine={clearRoutine}
-        addRoutineButtonClick={addRoutineButtonClick}
       />
       {/* timer */}
-      <Timer
-        state={state}
-        setState={setState}
-        getNewTimer={getNewTimer}
-        saveTimer={saveTimer}
-        workerRef={workerRef}
-      />
+      <div className="flex flex-col items-center pt-[10vh]">
+        <div className="flex gap-2 mb-5">
+          <p>Track Time</p>
+          <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
+          <p>Track Routines</p>
+        </div>
+        {timerSelected ?
+          <Timer
+            state={state}
+            setState={setState}
+            getNewTimer={getNewTimer}
+            saveTimer={saveTimer}
+            workerRef={workerRef}
+          /> :
+          <RoutinesContainer
+            state={state}
+            setState={setState}
+            dbReady={dbReady}
+            addRoutine={addRoutine}
+            addRoutineButtonClick={addRoutineButtonClick}
+            clearRoutine={clearRoutine}
+          />}
+      </div>
       {/* completed timers */}
       <CompletedAndPausedTimers
         state={state}
