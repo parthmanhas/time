@@ -16,7 +16,7 @@ type RoutinesProps = {
 export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRoutineButtonClick, clearRoutine }: RoutinesProps) {
 
     return (
-        <div className='h-[500px]'>
+        <div className='h-[500px] w-[350px] max-w-[350px]'>
             <div className="flex justify-center gap-2 mt-5">
                 <input
                     value={state.newRoutine}

@@ -63,7 +63,8 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                             onClick={() => toggleRoutine(date)}
                                             className={cn(
                                                 "w-5 h-5 bg-white rounded cursor-pointer",
-                                                completedDates.includes(date) && "bg-green-500",
+                                                completedDates.includes(date) && "bg-green-500 !animate-none !border-none",
+                                                dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
                                                 dayjs(date).isSame(new Date(), 'day') && !completedDates.includes(date) && "bg-yellow-500",
                                                 dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
                                             )}>
