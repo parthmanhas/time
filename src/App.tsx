@@ -7,6 +7,8 @@ import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
 import { Charts } from "./components/charts";
 import { RoutinesContainer } from "./components/routines-container";
+import { AnimatePresence, motion } from 'framer-motion';
+
 
 function App() {
 
@@ -185,22 +187,42 @@ function App() {
           <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
           <p>track routines</p>
         </div>
-        {timerSelected ?
-          <Timer
-            state={state}
-            setState={setState}
-            getNewTimer={getNewTimer}
-            saveTimer={saveTimer}
-            workerRef={workerRef}
-          /> :
-          <RoutinesContainer
-            state={state}
-            setState={setState}
-            dbReady={dbReady}
-            addRoutine={addRoutine}
-            addRoutineButtonClick={addRoutineButtonClick}
-            clearRoutine={clearRoutine}
-          />}
+        <AnimatePresence mode="wait">
+          {timerSelected ? (
+            <motion.div
+              key="timer"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Timer
+                state={state}
+                setState={setState}
+                getNewTimer={getNewTimer}
+                saveTimer={saveTimer}
+                workerRef={workerRef}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="routines"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <RoutinesContainer
+                state={state}
+                setState={setState}
+                dbReady={dbReady}
+                addRoutine={addRoutine}
+                addRoutineButtonClick={addRoutineButtonClick}
+                clearRoutine={clearRoutine}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       {/* completed timers */}
       <CompletedAndPausedTimers
