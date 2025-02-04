@@ -26,7 +26,7 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
                     <TabsTrigger value="30days" className="cursor-pointer">30 Days</TabsTrigger>
                     <TabsTrigger value="30daysTags" className="cursor-pointer">30 Days Tags</TabsTrigger>
                 </TabsList>
-                <TabsContent value="30days" className="h-[500px] overflow-scroll">
+                <TabsContent value="30days" className="h-[550px] overflow-scroll">
                     {state.timers.length > 0
                         ?
                         <Last30DaysChart timers={state.timers} />
@@ -34,8 +34,8 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
                         <div className="flex items-center justify-center h-full">No data</div>
                     }
                 </TabsContent>
-                <TabsContent value="30daysTags" className="h-[500px] overflow-scroll">
-                    {state.timers.length > 0
+                <TabsContent value="30daysTags" className="h-[550px] overflow-scroll">
+                    {state.timers.length > 0 && state.timers.some(timer => timer.tags.length > 0)
                         ?
                         <Last30DaysChart showTags={true} timers={state.timers} />
                         :

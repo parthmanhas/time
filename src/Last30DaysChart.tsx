@@ -7,6 +7,7 @@ import {
     Legend,
     ResponsiveContainer,
     CartesianGrid,
+    Label,
 } from "recharts";
 import dayjs from "dayjs";
 import { TimerModel } from "./types";
@@ -24,7 +25,7 @@ const generateLast30DaysDataWithTags = (timers: TimerModel[]) => {
             return acc;
         }, {});
         const formatSecondsToDecimalHours = (seconds: number) => {
-            return (seconds / 3600).toFixed(2)
+            return parseFloat((seconds / 3600).toFixed(2))
         }
         const tagsInDecimalHours = Object.fromEntries(
             Object.entries(dataForTags).map(([tag, timeInSeconds]) => [tag, formatSecondsToDecimalHours(timeInSeconds)])
@@ -86,12 +87,13 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                     <CartesianGrid strokeDasharray="1 5" />
                     <XAxis
                         type="number"
-                        label={{
-                            value: "Hours Completed",
-                            position: "insideBottom",
-                            offset: 0,
-                        }}
-                    />
+                    >
+                        <Label
+                            position='insideBottom'
+                            offset={-5}
+                            value="Hours Completed"
+                        />
+                    </XAxis>
                     <YAxis
                         type="category"
                         dataKey="date"
@@ -112,7 +114,7 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                                 );
                             }
                             // For with tags, display tags with time > 0
-                            const validTags = payload.filter((entry) => typeof entry.value === 'number' && entry.value > 0);
+                            const validTags = payload.filter((entry) => entry.value !== undefined && !isNaN(parseFloat(String(entry.value))) && parseFloat(String(entry.value)) > 0);
                             return (
                                 <div className="bg-black rounded border-2 border-slate-300 p-2">
                                     <p>{`Date: ${validTags[0]?.payload?.date || ""}`}</p>
