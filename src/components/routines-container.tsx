@@ -36,7 +36,7 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
             {state.routines.length > 0 ?
                 <>
                     <div className="flex justify-center mb-5">
-                        <ul className="menu menu-horizontal shadow-md w-full py-5 pr-3 pl-0 overflow-x-auto whitespace-nowrap flex-nowrap flex justify-center gap-3">
+                        <ul className="menu menu-horizontal shadow-md py-5 px-3 overflow-x-auto whitespace-nowrap flex-nowrap flex justify-start gap-3">
                             {state.routines.map(routine => (
                                 <li
                                     key={routine}
