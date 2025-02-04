@@ -151,15 +151,10 @@ function App() {
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
       <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
         <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
-          <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
-            <Charts
-              className="w-full h-full"
-              state={state}
-              mobile={true}
-            />
-          </div>
 
-          <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center">
+
+
+          <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
             <TimerRoutinesContainer
               className="w-full h-full flex flex-col items-center pt-[10vh]"
               addRoutine={addRoutine}
@@ -176,6 +171,14 @@ function App() {
             />
           </div>
 
+          <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
+            <Charts
+              className="w-full h-full"
+              state={state}
+              mobile={true}
+            />
+          </div>
+
           <div id="timers-list" className="carousel-item w-full flex-shrink-0 snap-center">
             <CompletedAndPausedTimers
               className="w-full h-full px-5"
@@ -189,8 +192,8 @@ function App() {
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 bg-black">
-          <a href="#charts" className="btn btn-md">charts</a>
           <a href="#timer-container" className="btn btn-md">timer</a>
+          <a href="#charts" className="btn btn-md">charts</a>
           <a href="#timers-list" className="btn btn-md">history</a>
         </div>
       </div>
