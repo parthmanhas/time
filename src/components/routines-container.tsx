@@ -3,6 +3,8 @@ import { cn } from '../lib/utils'
 import { TimerState } from '../types'
 import { Button } from './ui/button'
 import { Routines } from './routines'
+import { motion } from 'framer-motion';
+
 
 type RoutinesProps = {
     state: TimerState,
@@ -15,6 +17,9 @@ type RoutinesProps = {
 
 export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRoutineButtonClick, clearRoutine }: RoutinesProps) {
 
+    if (!state.selectedRoutine) {
+        setState(prev => ({ ...prev, selectedRoutine: state.routines[0] }))
+    }
     return (
         <div className='h-[500px] w-full max-w-sm'>
             <div className="flex justify-center gap-2">
@@ -52,7 +57,16 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
                     </div>
                     {state.selectedRoutine
                         ?
-                        <Routines name={state.selectedRoutine} dbReady={dbReady} />
+                        <motion.div
+                            key={state.selectedRoutine}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.2 }}
+                        >
+
+                            <Routines name={state.selectedRoutine} dbReady={dbReady} />
+                        </motion.div>
                         :
                         <p className="text-center pt-10">Select a routine to display</p>
                     }
