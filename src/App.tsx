@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializeDB, saveRoutine } from "./db";
 import { TimerModel, TimerState, TimerStatus } from "./types";
-import { Timer } from "./components/timer";
 import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
 import { Charts } from "./components/charts";
-import { RoutinesContainer } from "./components/routines-container";
-import { AnimatePresence, motion } from 'framer-motion';
+import { TimerRoutinesContainer } from "./components/timer-routines-container";
 
 
 function App() {
@@ -35,7 +33,7 @@ function App() {
       task: '',
       newTask: '',
       newTag: ''
-    }
+    } as TimerModel
   }
 
   const [state, setState] = useState<TimerState>({
@@ -150,30 +148,52 @@ function App() {
   }, []);
 
   return (
-    <div className="w-screen sm:h-screen flex flex-col sm:grid sm:grid-cols-3 bg-black text-white overflow-hidden">
-      {/* mobile */}
-      {/* timer */}
-      <Timer
-        mobile={true}
-        state={state}
-        setState={setState}
-        getNewTimer={getNewTimer}
-        saveTimer={saveTimer}
-        workerRef={workerRef}
-      />
-      {/* chart */}
-      <Charts
-        mobile={true}
-        state={state}
-      />
-      {/* completed timers */}
-      <CompletedAndPausedTimers
-        mobile={true}
-        state={state}
-        removeTimer={removeTimer}
-        setState={setState}
-        workerRef={workerRef}
-      />
+    <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
+      <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
+        <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
+          <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
+            <Charts
+              className="w-full h-full"
+              state={state}
+              mobile={true}
+            />
+          </div>
+
+          <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center">
+            <TimerRoutinesContainer
+              className="w-full h-full flex flex-col items-center pt-[10vh]"
+              addRoutine={addRoutine}
+              addRoutineButtonClick={addRoutineButtonClick}
+              clearRoutine={clearRoutine}
+              dbReady={dbReady}
+              getNewTimer={getNewTimer}
+              saveTimer={saveTimer}
+              setTimerSelected={setTimerSelected}
+              state={state}
+              setState={setState}
+              timerSelected={timerSelected}
+              workerRef={workerRef}
+            />
+          </div>
+
+          <div id="timers-list" className="carousel-item w-full flex-shrink-0 snap-center">
+            <CompletedAndPausedTimers
+              className="w-full h-full px-5"
+              state={state}
+              removeTimer={removeTimer}
+              setState={setState}
+              workerRef={workerRef}
+              mobile={true}
+            />
+          </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 bg-black">
+          <a href="#charts" className="btn btn-md">charts</a>
+          <a href="#timer-container" className="btn btn-md">timer</a>
+          <a href="#timers-list" className="btn btn-md">history</a>
+        </div>
+      </div>
 
       {/* above mobile */}
       {/* chart */}
@@ -181,49 +201,20 @@ function App() {
         state={state}
       />
       {/* timer */}
-      <div className="flex flex-col items-center pt-[10vh]">
-        <div className="flex gap-2 mb-5">
-          <p>track time</p>
-          <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
-          <p>track routines</p>
-        </div>
-        <AnimatePresence mode="wait">
-          {timerSelected ? (
-            <motion.div
-              key="timer"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Timer
-                state={state}
-                setState={setState}
-                getNewTimer={getNewTimer}
-                saveTimer={saveTimer}
-                workerRef={workerRef}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="routines"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <RoutinesContainer
-                state={state}
-                setState={setState}
-                dbReady={dbReady}
-                addRoutine={addRoutine}
-                addRoutineButtonClick={addRoutineButtonClick}
-                clearRoutine={clearRoutine}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <TimerRoutinesContainer
+        className="hidden sm:flex flex-col items-center pt-[10vh]"
+        addRoutine={addRoutine}
+        addRoutineButtonClick={addRoutineButtonClick}
+        clearRoutine={clearRoutine}
+        dbReady={dbReady}
+        getNewTimer={getNewTimer}
+        saveTimer={saveTimer}
+        setTimerSelected={setTimerSelected}
+        state={state}
+        setState={setState}
+        timerSelected={timerSelected}
+        workerRef={workerRef}
+      />
       {/* completed timers */}
       <CompletedAndPausedTimers
         state={state}

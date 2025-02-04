@@ -21,7 +21,7 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
         setState(prev => ({ ...prev, selectedRoutine: state.routines[0] }))
     }
     return (
-        <div className='h-[500px] w-full max-w-sm'>
+        <div className='h-[500px] w-full p-5 sm:p-0 max-w-sm'>
             <div className="flex justify-center gap-2">
                 <input
                     value={state.newRoutine}
@@ -62,9 +62,8 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.2 }}
+                            transition={{ duration: 0.5 }}
                         >
-
                             <Routines name={state.selectedRoutine} dbReady={dbReady} />
                         </motion.div>
                         :

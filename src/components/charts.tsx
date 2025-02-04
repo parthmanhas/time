@@ -4,20 +4,23 @@ import { cn } from "../utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 
 type ChartsRoutinesProps = {
+    id?: string,
     className?: string,
     mobile?: boolean,
     state: TimerState,
 }
 
-export const Charts = ({ className, mobile = false, state, }: ChartsRoutinesProps) => {
+export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutinesProps) => {
     return (
-        <div role="tablist" className={
-            cn(
-                className && className,
-                mobile && "h-screen sm:hidden border-b flex items-center",
-                !mobile && "hidden sm:h-full sm:flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100",
-            )
-        }>
+        <div id={id}
+            role="tablist"
+            className={
+                cn(
+                    className && className,
+                    mobile && "h-screen sm:hidden flex pt-[10vh]",
+                    !mobile && "hidden sm:h-full sm:flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100",
+                )
+            }>
             <Tabs defaultValue="30days" className="w-full">
                 <TabsList className="bg-transparent flex justify-center">
                     <TabsTrigger value="30days" className="cursor-pointer">30 Days</TabsTrigger>

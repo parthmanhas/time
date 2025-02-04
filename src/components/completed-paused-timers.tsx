@@ -3,6 +3,7 @@ import { cn } from "../utils"
 import { formatTime } from "../lib"
 
 type CompletedTimersProps = {
+    id?: string,
     className?: string,
     mobile?: boolean,
     state: TimerState,
@@ -11,7 +12,7 @@ type CompletedTimersProps = {
     removeTimer: (id: string) => void
 }
 
-export const CompletedAndPausedTimers = ({ className, mobile = false, state, setState, workerRef,  removeTimer }: CompletedTimersProps) => {
+export const CompletedAndPausedTimers = ({ id, className, mobile = false, state, setState, workerRef,  removeTimer }: CompletedTimersProps) => {
     const resumeTimer = (timer: TimerModel) => {
         setState(prev => ({ ...prev, currentTimer: { ...timer, status: 'ACTIVE' } }));
         workerRef.current?.postMessage({
@@ -20,9 +21,9 @@ export const CompletedAndPausedTimers = ({ className, mobile = false, state, set
         });
     }
     return (
-        <div className={cn(
+        <div id={id} className={cn(
             className && className,
-            mobile && "h-screen sm:hidden flex items-center justify-center p-5 border-b",
+            mobile && "h-screen sm:hidden flex justify-center pt-[10vh]",
             !mobile && "hidden sm:h-full w-full p-10 sm:flex items-center justify-center opacity-20 hover:opacity-100",
             !mobile && state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
         )}>
