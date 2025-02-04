@@ -181,9 +181,9 @@ function App() {
       {/* timer */}
       <div className="flex flex-col items-center pt-[10vh]">
         <div className="flex gap-2 mb-5">
-          <p>Track Time</p>
+          <p>track time</p>
           <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
-          <p>Track Routines</p>
+          <p>track routines</p>
         </div>
         {timerSelected ?
           <Timer

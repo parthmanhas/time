@@ -31,12 +31,14 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
             {state.routines.length > 0 ?
                 <>
                     <div className="flex justify-center mb-5">
-                        <ul className="menu menu-horizontal shadow-md max-w-3/4 overflow-x-auto whitespace-nowrap flex-nowrap flex gap-3">
+                        <ul className="menu menu-horizontal shadow-md w-full py-5 pr-3 pl-0 overflow-x-auto whitespace-nowrap flex-nowrap flex gap-3">
                             {state.routines.map(routine => (
                                 <li
                                     key={routine}
                                     className={cn(
-                                        state.selectedRoutine === routine && "border rounded block",
+                                        "border border-transparent rounded block hover:border-slate-700",
+                                        // "hover:border border-slate-700 rounded",
+                                        state.selectedRoutine === routine && "border-white hover:border-white",
                                     )}
                                     onClick={() => setState(prev => ({ ...prev, selectedRoutine: routine }))}>
                                     <a className="group relative">
