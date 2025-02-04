@@ -16,8 +16,8 @@ type RoutinesProps = {
 export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRoutineButtonClick, clearRoutine }: RoutinesProps) {
 
     return (
-        <div className='h-[500px] w-[350px] max-w-[350px]'>
-            <div className="flex justify-center gap-2 mt-5">
+        <div className='h-[500px] w-full max-w-sm'>
+            <div className="flex justify-center gap-2">
                 <input
                     value={state.newRoutine}
                     onKeyDown={addRoutine}
@@ -31,7 +31,7 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
             {state.routines.length > 0 ?
                 <>
                     <div className="flex justify-center mb-5">
-                        <ul className="menu menu-horizontal shadow-md w-full py-5 pr-3 pl-0 overflow-x-auto whitespace-nowrap flex-nowrap flex gap-3">
+                        <ul className="menu menu-horizontal shadow-md w-full py-5 pr-3 pl-0 overflow-x-auto whitespace-nowrap flex-nowrap flex justify-center gap-3">
                             {state.routines.map(routine => (
                                 <li
                                     key={routine}

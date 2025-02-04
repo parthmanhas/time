@@ -50,7 +50,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 
     return (
         <>
-            <div className="carousel max-w-[350px]">
+            <div className="carousel w-full">
                 <div id="item1" className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
                     {Array.from({ length: 3 }, (_, i) => i + 1).map((i) => {
                         return (
