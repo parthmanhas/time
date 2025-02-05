@@ -151,12 +151,9 @@ function App() {
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
       <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
         <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
-
-
-
           <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
             <TimerRoutinesContainer
-              className="w-full h-full flex flex-col items-center pt-[10vh]"
+              className="w-full h-full flex flex-col items-center justify-center"
               addRoutine={addRoutine}
               addRoutineButtonClick={addRoutineButtonClick}
               clearRoutine={clearRoutine}
@@ -201,11 +198,12 @@ function App() {
       {/* above mobile */}
       {/* chart */}
       <Charts
+        className="h-[500px] pt-[10vh]"
         state={state}
       />
       {/* timer */}
       <TimerRoutinesContainer
-        className="hidden sm:flex flex-col items-center pt-[10vh]"
+        className="hidden sm:flex flex-col items-center h-[500px] pt-[10vh]"
         addRoutine={addRoutine}
         addRoutineButtonClick={addRoutineButtonClick}
         clearRoutine={clearRoutine}
@@ -220,13 +218,12 @@ function App() {
       />
       {/* completed timers */}
       <CompletedAndPausedTimers
+        className="h-[500px] pt-[10vh]"
         state={state}
         removeTimer={removeTimer}
         setState={setState}
         workerRef={workerRef}
       />
-
-
     </div>
   )
 }

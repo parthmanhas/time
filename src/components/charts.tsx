@@ -17,8 +17,8 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
             className={
                 cn(
                     className && className,
-                    mobile && "h-screen sm:hidden flex pt-[10vh]",
-                    !mobile && "hidden sm:h-full sm:flex items-center justify-center tabs tabs-border opacity-20 hover:opacity-100",
+                    mobile && "h-screen sm:hidden flex items-center",
+                    !mobile && "hidden sm:h-full sm:flex justify-center tabs tabs-border opacity-20 hover:opacity-100",
                 )
             }>
             <Tabs defaultValue="30days" className="w-full">

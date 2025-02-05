@@ -23,8 +23,8 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
     return (
         <div id={id} className={cn(
             className && className,
-            mobile && "h-screen sm:hidden flex justify-center pt-[10vh]",
-            !mobile && "hidden sm:h-full w-full p-10 sm:flex items-center justify-center opacity-20 hover:opacity-100",
+            mobile && "h-screen sm:hidden flex items-center",
+            !mobile && "hidden sm:h-full w-full sm:flex justify-center opacity-20 hover:opacity-100",
             !mobile && state.currentTimer.status === 'ACTIVE' && "border-white/10 text-white/30"
         )}>
             {state.timers.length === 0

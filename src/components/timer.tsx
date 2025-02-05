@@ -1,7 +1,5 @@
-import { Plus } from "lucide-react"
 import { TimerModel, TimerState, TimerStatus } from "../types"
 import { cn } from "../utils"
-import { Button } from "./ui/button"
 
 const formatMinutes = (time: number) => {
     return `${Math.floor(time / 60).toString().padStart(2, '0')}`
@@ -43,18 +41,6 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
         }
     }
 
-    const addTagButtonClick = () => {
-        if (state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1 && state.currentTimer.newTag !== '') {
-            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
-        } else {
-            console.error('tag already exists or empty')
-        }
-    }
-
-    const addTaskButtonClick = () => {
-        setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask, newTask: '' } }));
-    }
-
     const removeTag = (name: string) => {
         setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: prev.currentTimer.tags.filter(t => t !== name) } }))
     }
@@ -66,6 +52,16 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
     }
 
     const toggleTimer = () => {
+        if (state.currentTimer.status === 'PAUSED') {
+            // add task
+            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask, newTask: '' } }));
+            // add tag
+            if (state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1 && state.currentTimer.newTag !== '') {
+                setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
+            } else {
+                console.error('tag already exists or empty')
+            }
+        }
         setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: prev.currentTimer.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' } }));
         workerRef.current?.postMessage({
             type: state.currentTimer.status === 'ACTIVE' ? 'STOP_TIMER' : 'START_TIMER',
@@ -128,19 +124,23 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                 <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
                 <span style={{ "--value": formatSeconds(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatSeconds(state.currentTimer.remaining_time || 0)}</span>
             </h1>
-            <p className={cn(
-                "text-center",
-                state.currentTimer.task ? "opacity-100" : "opacity-20"
-            )}>{state.currentTimer.task || 'task title empty'}</p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-                {state.currentTimer.tags.length === 0 && <p className="text-center opacity-20">tags empty</p>}
-                {state.currentTimer.tags.map((tag, index) =>
-                    <span key={index} className="badge badge-md relative cursor-pointer group bg-transparent text-white">
-                        {tag}
-                        <span onClick={() => removeTag(tag)} className="sm:hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
-                    </span>
-                )}
-            </div>
+            {state.currentTimer.status !== 'PAUSED' &&
+                <>
+                    <p className={cn(
+                        "text-center",
+                        state.currentTimer.task ? "opacity-100" : "opacity-20"
+                    )}>{state.currentTimer.task || 'task title empty'}</p>
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        {state.currentTimer.tags.length === 0 && <p className="text-center opacity-20">tags empty</p>}
+                        {state.currentTimer.tags.map((tag, index) =>
+                            <span key={index} className="badge badge-md relative cursor-pointer group bg-transparent text-white">
+                                {tag}
+                                <span onClick={() => removeTag(tag)} className="sm:hidden group-hover:block badge badge-xs absolute -top-2 -right-3 bg-red-500 text-white">x</span>
+                            </span>
+                        )}
+                    </div>
+                </>
+            }
             <div className="flex gap-2">
                 <input
                     disabled={state.currentTimer.status === 'ACTIVE'}
@@ -153,10 +153,10 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value, task: e.target.value } }))}
                     onKeyDown={addTask}
                     placeholder="add task title" />
-                <Button size="icon" className={cn(
+                {/* <Button size="icon" className={cn(
                     "cursor-pointer",
                     state.currentTimer.status === 'ACTIVE' && "hidden"
-                )} onClick={() => addTaskButtonClick()}><Plus /></Button>
+                )} onClick={() => addTaskButtonClick()}><Plus /></Button> */}
             </div>
             <div className="flex gap-2">
                 <input
@@ -171,10 +171,10 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))}
                     onKeyDown={addTag}
                     placeholder="add tag(s), press enter to add" />
-                <Button size="icon" className={cn(
+                {/* <Button size="icon" className={cn(
                     "cursor-pointer",
                     state.currentTimer.status === 'ACTIVE' && "hidden"
-                )} onClick={() => addTagButtonClick()}><Plus /></Button>
+                )} onClick={() => addTagButtonClick()}><Plus /></Button> */}
                 <datalist id="existing-tags">
                     {Array.from(new Set(state.timers.map(timer => [...timer.tags]).flat())).map(tag => (
                         <option value={tag}>{tag}</option>
