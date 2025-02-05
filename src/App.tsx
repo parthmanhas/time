@@ -6,10 +6,11 @@ import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
 import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
-
+import { useAuth } from "./contexts/AuthContext";
+import { Login } from "./components/Login";
 
 function App() {
-
+  const { user, logout } = useAuth();
   const [dbReady, setDbReady] = useState(false);
   const [timerSelected, setTimerSelected] = useState(true);
 
@@ -149,6 +150,18 @@ function App() {
 
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
+      {/* Add logout button */}
+      <nav className="w-full h-[3rem] col-span-3 flex justify-end items-center px-2">
+        {!user && <Login />}
+        {user &&
+          <div className="flex gap-2">
+            <button onClick={() => { }} className="btn btn-sm btn-outline">Sync data</button>
+            <button onClick={logout} className="btn btn-sm btn-outline">Logout</button>
+          </div>
+        }
+      </nav>
+
+
       <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
         <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
           <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>

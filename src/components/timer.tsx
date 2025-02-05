@@ -1,5 +1,6 @@
 import { TimerModel, TimerState, TimerStatus } from "../types"
 import { cn } from "../utils"
+import { Login } from "./Login"
 
 const formatMinutes = (time: number) => {
     return `${Math.floor(time / 60).toString().padStart(2, '0')}`
