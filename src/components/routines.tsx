@@ -115,9 +115,12 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         className={cn(
                                             "w-5 h-5 rounded cursor-pointer",
                                             !completedDates[date] && "bg-white",
-                                            completedDates[date] && completedDates[date] <= 5 &&
-                                            `bg-green-${Math.min(500 + (completedDates[date] - 1) * 100, 900)} !animate-none !border-none`,
-                                            completedDates[date] && completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
+                                            completedDates[date] === 1 && "bg-green-500 !animate-none !border-none",
+                                            completedDates[date] === 2 && "bg-green-600 !animate-none !border-none",
+                                            completedDates[date] === 3 && "bg-green-700 !animate-none !border-none",
+                                            completedDates[date] === 4 && "bg-green-800 !animate-none !border-none",
+                                            completedDates[date] === 5 && "bg-green-900 !animate-none !border-none",
+                                            completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
                                             dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
                                             dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
                                             dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
@@ -171,7 +174,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 }
 
 function groupCompletionsByDate(updatedCompletions: string[]) {
-    if(updatedCompletions.length === 0) {
+    if (updatedCompletions.length === 0) {
         console.error('No completions found');
     }
     return updatedCompletions.reduce((acc, date) => {
