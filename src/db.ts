@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { TimerModel } from "./types";
 
 const VERSION = 1;
@@ -333,6 +334,38 @@ export const deleteRoutine = (name: string): Promise<boolean> => {
         };
     });
 }
+
+export const deleteOneRoutineCompletion = async (name: string, date: Date) => {
+    let request: IDBOpenDBRequest;
+    let db: IDBDatabase;
+    const version = VERSION;
+    return new Promise((resolve) => {
+        request = indexedDB.open(TIMERS_DB, version);
+
+        request.onsuccess = () => {
+            if (request.readyState === 'pending') return;
+            db = request.result;
+            const tx = db.transaction(ROUTINES_COMPLETION_STORE, 'readwrite');
+            const store = tx.objectStore(ROUTINES_COMPLETION_STORE);
+            const res = store.getAll(name);
+
+            res.onsuccess = () => {
+                if (request.readyState === 'pending') return;
+                console.log('deleteOneRoutineCompletion', name);
+                const completions = res.result.flat() as string[];
+                const updatedCompletions = completions.filter((d) => dayjs(d).isSame(date, 'day') === false);
+                store.put(updatedCompletions, name);
+                resolve(updatedCompletions);
+            }
+
+            res.onerror = (event) => {
+                if (request.readyState === 'pending') return;
+                console.error('Error deleting routine completion:', (event.target as IDBRequest).error);
+                resolve(false);
+            }
+        };
+    });
+};
 
 export const exportData = async (dbName: string, storeName: string) => {
     const version = VERSION;

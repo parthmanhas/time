@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 import { cn } from "../utils";
 import { useEffect, useState } from "react";
-import { getRoutineCompletions, commitRoutineCompletion } from "../db";
+import { getRoutineCompletions, commitRoutineCompletion, deleteOneRoutineCompletion } from "../db";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
 
@@ -32,7 +32,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
         if (!dbReady) return;
         (async () => {
             setSelectedDate(null);
-            setCompletedDates([]);
+            setCompletedDates({});
             try {
                 const completedDates = await getRoutineCompletions(name) as string[];
                 setCompletedDates(groupCompletionsByDate(completedDates));
@@ -42,23 +42,24 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
         })()
     }, [name, dbReady])
 
+
     const commitRoutine = async (date: string) => {
         if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
+            //return if completions > 6
+            if (completedDates[date] && completedDates[date] > 5) return;
             const updatedCompletions = await commitRoutineCompletion(name, new Date(date)) as string[];
-            // group updated completions by date
             const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-            // const wasComplete = completedDates.includes(date);
             setCompletedDates(updatedCompletionsGrouped);
 
-            // Show confetti only when marking as complete
-            // if (!wasComplete && updatedCompletions.includes(date)) {
-            //     confetti({
-            //         particleCount: 100,
-            //         spread: 70,
-            //         origin: { y: 0.6 },
-            //         colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#795548', '#9E9E9E', '#607D8B']
-            //     });
-            // }
+            // Show confetti when completing (not uncompleting)
+            if (updatedCompletionsGrouped[date]) {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#22C55E', '#16A34A', '#15803D', '#166534', '#14532D', '#124D28', '#0F3F1F', '#0D3A1B', '#0B2F15', '#092610', '#071F0B', '#051A07', '#031404']
+                });
+            }
         };
     }
 
@@ -84,23 +85,35 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                         {dates.map((date) => {
                             if (dayjs(date).month() + 1 !== month) return null;
                             return (
-                                                                <div key={date} className="relative">
-                                  <div 
-                                    onClick={() => commitRoutine(date)}
-                                    className={cn(
-                                      "w-5 h-5 rounded cursor-pointer",
-                                      !completedDates[date] && "bg-white",
-                                      completedDates[date] && completedDates[date] <= 5 && 
-                                        `bg-green-${Math.min(500 + (completedDates[date] - 1) * 100, 900)} !animate-none !border-none`,
-                                      completedDates[date] && completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
-                                      dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
-                                      dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
-                                      dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                <div key={date} className="relative">
+                                    <div
+                                        onClick={() => commitRoutine(date)}
+                                        onMouseDown={() => {
+                                            const timer = setTimeout(async () => {
+                                                if (completedDates[date]) {
+                                                    const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
+                                                    const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
+                                                    setCompletedDates(updatedCompletionsGrouped);
+                                                }
+                                            }, 500);
+
+                                            const cleanup = () => clearTimeout(timer);
+                                            window.addEventListener('mouseup', cleanup, { once: true });
+                                        }}
+                                        className={cn(
+                                            "w-5 h-5 rounded cursor-pointer",
+                                            !completedDates[date] && "bg-white",
+                                            completedDates[date] && completedDates[date] <= 5 &&
+                                            `bg-green-${Math.min(500 + (completedDates[date] - 1) * 100, 900)} !animate-none !border-none`,
+                                            completedDates[date] && completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
+                                            dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
+                                            dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
+                                            dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                        )}
+                                    />
+                                    {completedDates[date] > 5 && (
+                                        <span className="absolute -top-1 -right-1 text-yellow-400 text-xs"><Sparkles size={12} fill="yellow" /></span>
                                     )}
-                                  />
-                                  {completedDates[date] > 5 && (
-                                    <span className="absolute -top-1 -right-1 text-yellow-400 text-xs"><Sparkles size={12} fill="yellow" /></span>
-                                  )}
                                 </div>
                             )
                         })}
