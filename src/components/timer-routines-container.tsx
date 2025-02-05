@@ -40,7 +40,7 @@ export function TimerRoutinesContainer({
         <div id={id} className={cn(
             className && className,
         )}>
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-5 absolute top-[5vh] m-auto bg-black">
                 <p className="text-lg">track time</p>
                 <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
                 <p className="text-lg">track routines</p>
