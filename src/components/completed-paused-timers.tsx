@@ -38,7 +38,7 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
                             className={cn(
                                 timer.status === 'QUEUED' && "border-l-amber-500 cursor-pointer",
                                 timer.status === 'COMPLETED' && "border-l-green-500",
-                                "relative border-l-2 border-b-white/20 border-b-[1px] mb-1 p-2 group noto-sans-mono-400 text-sm md:text-base"
+                                "relative border-l-2 border-b-white/20 border-b-[1px] mb-1 p-2 group text-sm md:text-base"
                             )}>
                             <button onClick={() => removeTimer(timer.id)} className="cursor-pointer sm:hidden group-hover:block badge badge-xs absolute -top-2 -right-0 bg-red-500 text-white">x</button>
 

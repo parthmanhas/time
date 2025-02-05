@@ -5,7 +5,7 @@
 @plugin 'tailwindcss-animate';
 
 
-.noto-sans-mono-400 {
+body {
   font-family: "Noto Sans Mono", serif;
   font-optical-sizing: auto;
   font-weight: 400;

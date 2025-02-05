@@ -41,9 +41,9 @@ export function TimerRoutinesContainer({
             className && className,
         )}>
             <div className="flex gap-2 mb-5">
-                <p>track time</p>
+                <p className="text-lg">track time</p>
                 <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
-                <p>track routines</p>
+                <p className="text-lg">track routines</p>
             </div>
             <AnimatePresence mode="wait">
                 {timerSelected ? (
