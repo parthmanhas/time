@@ -171,6 +171,9 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 }
 
 function groupCompletionsByDate(updatedCompletions: string[]) {
+    if(updatedCompletions.length === 0) {
+        console.error('No completions found');
+    }
     return updatedCompletions.reduce((acc, date) => {
         const key = dayjs(date).format('YYYY-MM-DD');
         acc[key] = acc[key] ? acc[key] + 1 : 1;
