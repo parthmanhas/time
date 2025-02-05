@@ -113,7 +113,7 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                             window.addEventListener('mouseup', cleanup, { once: true });
                                         }}
                                         className={cn(
-                                            "w-5 h-5 rounded cursor-pointer",
+                                            "w-5 h-5 rounded cursor-pointer flex items-center justify-center text-xs",
                                             !completedDates[date] && "bg-white",
                                             completedDates[date] === 1 && "bg-green-500 !animate-none !border-none",
                                             completedDates[date] === 2 && "bg-green-600 !animate-none !border-none",
@@ -125,7 +125,9 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                             dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
                                             dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
                                         )}
-                                    />
+                                    >
+                                        {completedDates[date]}
+                                    </div>
                                     {completedDates[date] > 5 && (
                                         <span className="absolute -top-1 -right-1 text-yellow-400 text-xs"><Sparkles size={12} fill="yellow" /></span>
                                     )}
