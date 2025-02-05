@@ -40,6 +40,15 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
                             {state.routines.map(routine => (
                                 <li
                                     key={routine}
+                                    onTouchStart={() => {
+                                        const timer = setTimeout(async () => {
+                                            clearRoutine(routine)
+                                        }, 500);
+
+                                        const cleanup = () => clearTimeout(timer);
+                                        window.addEventListener('touchend', cleanup, { once: true });
+                                        window.addEventListener('touchcancel', cleanup, { once: true });
+                                    }}
                                     className={cn(
                                         "border border-transparent rounded block hover:border-slate-700",
                                         // "hover:border border-slate-700 rounded",
@@ -49,7 +58,6 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
                                     <a className="group relative">
                                         {routine}
                                         <span onClick={() => clearRoutine(routine)} className="hidden group-hover:block badge badge-xs absolute -top-2 -right-3  bg-red-500 text-white">x</span>
-
                                     </a>
                                 </li>
                             ))}

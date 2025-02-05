@@ -88,6 +88,18 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                 <div key={date} className="relative">
                                     <div
                                         onClick={() => commitRoutine(date)}
+                                        onTouchStart={() => {
+                                            const timer = setTimeout(async () => {
+                                                if (completedDates[date]) {
+                                                    const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
+                                                    const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
+                                                    setCompletedDates(updatedCompletionsGrouped);
+                                                }
+                                            }, 500);
+                                            const cleanup = () => clearTimeout(timer);
+                                            window.addEventListener('touchend', cleanup, { once: true });
+                                            window.addEventListener('touchcancel', cleanup, { once: true });
+                                        }}
                                         onMouseDown={() => {
                                             const timer = setTimeout(async () => {
                                                 if (completedDates[date]) {
