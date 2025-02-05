@@ -19,6 +19,7 @@ function App() {
   const handleInitDB = async () => {
     await initializeDB();
     setDbReady(true);
+    await syncFromFirebase();
     await refreshTimers();
     await refreshRoutines();
   };
@@ -174,7 +175,6 @@ function App() {
 
     const ref = collection(db, user.uid);
     const snapshot = await getDocs(ref);
-    console.log(snapshot)
     let combinedData: Record<string, { key: IDBValidKey; value: any; }[]> = {};
     new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve) => {
       snapshot.forEach(doc => {
