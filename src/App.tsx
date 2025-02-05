@@ -153,6 +153,7 @@ function App() {
         <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
           <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
             <TimerRoutinesContainer
+              mobile={true}
               className="w-full h-full flex flex-col items-center justify-center"
               addRoutine={addRoutine}
               addRoutineButtonClick={addRoutineButtonClick}

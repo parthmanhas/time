@@ -17,10 +17,11 @@ type TimerRoutinesContainerProps = {
     addRoutineButtonClick: () => Promise<void>;
     clearRoutine: (routine: string) => Promise<void>;
     timerSelected: boolean;
+    mobile?: boolean;
     setTimerSelected: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function TimerRoutinesContainer({ 
+export function TimerRoutinesContainer({
     id,
     className,
     state,
@@ -33,14 +34,19 @@ export function TimerRoutinesContainer({
     addRoutineButtonClick,
     clearRoutine,
     timerSelected,
-    setTimerSelected
- }: TimerRoutinesContainerProps) {
+    setTimerSelected,
+    mobile = false
+}: TimerRoutinesContainerProps) {
 
     return (
         <div id={id} className={cn(
             className && className,
         )}>
-            <div className="flex gap-2 mb-5 absolute top-[5vh] m-auto bg-black">
+            <div className={cn(
+                "flex gap-2 bg-black",
+                mobile ? "absolute top-10"
+                    : "mb-5"
+            )}>
                 <p className="text-lg">track time</p>
                 <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />
                 <p className="text-lg">track routines</p>
