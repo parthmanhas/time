@@ -78,12 +78,10 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                 <BarChart
                     layout="vertical"
                     data={data}
-                // margin={{
-                //     top: 20,
-                //     right: 20,
-                //     left: 20,
-                //     bottom: 20,
-                // }}
+                margin={{
+                    right: 20,
+                    left: 5,
+                }}
                 >
                     <CartesianGrid strokeDasharray="1 5" />
                     <XAxis
