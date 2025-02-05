@@ -205,18 +205,10 @@ export const updateCompletions = (name: string, completions: string[]): Promise<
     });
 }
 
-export const toggleRoutineCompletion = async (name: string, date: string): Promise<string[]> => {
+export const commitRoutineCompletion = async (name: string, date: Date): Promise<string[]> => {
     const completions = (await getRoutineCompletions<string>(name) || []).flatMap((c) => c);
     let updatedCompletions: string[] = [];
-    const index = completions.indexOf(date);
-    if (index > -1) {
-        //present -> filter
-        updatedCompletions = completions.filter((d) => d !== date);
-        // await deleteRoutineCompletion(name)
-    } else {
-        //not present -> add
-        updatedCompletions = [...completions, date];
-    }
+    updatedCompletions = [...completions, date.toISOString()];
     await updateCompletions(name, updatedCompletions)
     // return updated completions
     return new Promise((resolve) => {

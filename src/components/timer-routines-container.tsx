@@ -41,6 +41,7 @@ export function TimerRoutinesContainer({
     return (
         <div id={id} className={cn(
             className && className,
+            "relative"
         )}>
             <div className={cn(
                 "flex gap-2 bg-black",
