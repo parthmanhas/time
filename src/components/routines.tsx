@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { cn } from "../utils";
 import { useEffect, useState } from "react";
 import { getRoutineCompletions, commitRoutineCompletion } from "../db";
-import { Edit } from "lucide-react";
+import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
 
 const generateCurrentYearDates = () => {
@@ -84,15 +84,23 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                         {dates.map((date) => {
                             if (dayjs(date).month() + 1 !== month) return null;
                             return (
-                                <div key={date}
+                                                                <div key={date} className="relative">
+                                  <div 
                                     onClick={() => commitRoutine(date)}
                                     className={cn(
-                                        "w-5 h-5 bg-white rounded cursor-pointer",
-                                        completedDates[date] && "bg-green-500 !animate-none !border-none",
-                                        dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
-                                        dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
-                                        dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
-                                    )}>
+                                      "w-5 h-5 rounded cursor-pointer",
+                                      !completedDates[date] && "bg-white",
+                                      completedDates[date] && completedDates[date] <= 5 && 
+                                        `bg-green-${Math.min(500 + (completedDates[date] - 1) * 100, 900)} !animate-none !border-none`,
+                                      completedDates[date] && completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
+                                      dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
+                                      dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
+                                      dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
+                                    )}
+                                  />
+                                  {completedDates[date] > 5 && (
+                                    <span className="absolute -top-1 -right-1 text-yellow-400 text-xs"><Sparkles size={12} fill="yellow" /></span>
+                                  )}
                                 </div>
                             )
                         })}
