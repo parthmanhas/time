@@ -161,6 +161,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
             <div className="flex gap-2">
                 <input
                     disabled={state.currentTimer.status === 'ACTIVE'}
+                    list="existing-tags"
                     type="text"
                     className={cn(
                         "p-2 w-full rounded border",
@@ -174,6 +175,11 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     "cursor-pointer",
                     state.currentTimer.status === 'ACTIVE' && "hidden"
                 )} onClick={() => addTagButtonClick()}><Plus /></Button>
+                <datalist id="existing-tags">
+                    {Array.from(new Set(state.timers.map(timer => [...timer.tags]).flat())).map(tag => (
+                        <option value={tag}>{tag}</option>
+                    ))}
+                </datalist>
             </div>
             <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
             <button onClick={() => { pauseTimer(); resetCurrentTimer(); }} className="btn btn-outline">reset</button>
