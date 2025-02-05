@@ -30,7 +30,8 @@ const generateLast30DaysDataWithTags = (timers: TimerModel[]) => {
         const tagsInDecimalHours = Object.fromEntries(
             Object.entries(dataForTags).map(([tag, timeInSeconds]) => [tag, formatSecondsToDecimalHours(timeInSeconds)])
         );
-        return { date, ...tagsInDecimalHours }; // Combine date, total time, and tag data
+        const totalTime = Object.values(tagsInDecimalHours).reduce((acc, time) => acc + time, 0);
+        return { date, ...tagsInDecimalHours, totalTime }; // Combine date, total time, and tag data
 
     }).reverse(); // Reverse to show the oldest date first
 };
@@ -73,20 +74,26 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
 
     return (
         <div className={`w-full h-[500px] ${className}`}>
-            <ResponsiveContainer>
+            <ResponsiveContainer width={"100%"} height={"100%"}>
                 <BarChart
                     layout="vertical"
                     data={data}
-                    margin={{
-                        top: 20,
-                        right: 30,
-                        left: 50,
-                        bottom: 5,
-                    }}
+                // margin={{
+                //     top: 20,
+                //     right: 20,
+                //     left: 20,
+                //     bottom: 20,
+                // }}
                 >
                     <CartesianGrid strokeDasharray="1 5" />
                     <XAxis
                         type="number"
+                        tickSize={1}
+                        domain={[0, Math.max(5, Math.ceil(Math.max(...data.map(d => d.totalTime))))]}
+                        ticks={Array.from(
+                            { length: Math.max(6, Math.ceil(Math.max(...data.map(d => d.totalTime))) + 1) },
+                            (_, i) => i
+                        )}
                     >
                         <Label
                             position='insideBottom'
@@ -97,7 +104,9 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                     <YAxis
                         type="category"
                         dataKey="date"
-                        label={{ angle: -90, position: "insideLeft" }}
+                        // label={{ angle: -90, position: "insideLeft" }}
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(date) => dayjs(date).format("DD-MM-YY")}
                     // interval={0}
                     />
                     <Tooltip
@@ -129,7 +138,7 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                             );
                         }}
                     />
-                    <Legend wrapperStyle={{bottom: -10}}/>
+                    <Legend wrapperStyle={{ bottom: -10 }} />
                     {showTags
                         ? uniqueTags.map((tag, index) => (
                             <Bar
@@ -155,7 +164,7 @@ const Last30DaysChart = ({ className = '', showTags = false, timers }: { classNa
                         ]}
                 </BarChart>
             </ResponsiveContainer>
-        </div>
+        </div >
     );
 };
 
