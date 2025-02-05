@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
-import { addTimer, deleteRoutine, deleteTimer, getRoutines, getTimers, initializeDB, saveRoutine } from "./db";
+import { addTimer, deleteRoutine, deleteTimer, getAllFromIndexedDB, getRoutines, getTimers, initializeDB, insertAllToIndexedDB, saveRoutine } from "./db";
 import { TimerModel, TimerState, TimerStatus } from "./types";
 import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
@@ -8,6 +8,8 @@ import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
+import { collection, addDoc, setDoc, doc, getDocs, deleteDoc } from "firebase/firestore";
+import { db } from "./config/firebase";
 
 function App() {
   const { user, logout } = useAuth();
@@ -148,6 +150,45 @@ function App() {
     }
   }, []);
 
+  const syncToFirebase = async () => {
+    if (!user) {
+      console.error('user not logged in');
+      return;
+    }
+
+    const indexedDBData = await getAllFromIndexedDB();
+    // get result of all requests
+    const ref = collection(db, user.uid);
+
+    for (const [key, value] of Object.entries(indexedDBData)) {
+      await setDoc(doc(ref, key), { [key]: value });
+    }
+    console.log("Synced IndexedDB to Firebase ✅");
+  }
+
+  const syncFromFirebase = async () => {
+    if (!user) {
+      console.error('user not logged in');
+      return;
+    }
+
+    const ref = collection(db, user.uid);
+    const snapshot = await getDocs(ref);
+    console.log(snapshot)
+    let combinedData: Record<string, { key: IDBValidKey; value: any; }[]> = {};
+    new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve, reject) => {
+      snapshot.forEach(doc => {
+        combinedData = { ...combinedData, ...doc.data() } as Record<string, { key: IDBValidKey; value: any; }[]>;
+      });
+      resolve(combinedData);
+    }).then(async (data) => {
+      await insertAllToIndexedDB(data);
+      await refreshTimers();
+      await refreshRoutines();
+      console.log("Synced Firebase to IndexedDB ✅");
+    });
+  }
+
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
       {/* Add logout button */}
@@ -155,7 +196,8 @@ function App() {
         {!user && <Login />}
         {user &&
           <div className="flex gap-2">
-            <button onClick={() => { }} className="btn btn-sm btn-outline">Sync data</button>
+            <button onClick={syncToFirebase} className="btn btn-sm btn-outline">Upload data</button>
+            <button onClick={syncFromFirebase} className="btn btn-sm btn-outline">Download data</button>
             <button onClick={logout} className="btn btn-sm btn-outline">Logout</button>
           </div>
         }

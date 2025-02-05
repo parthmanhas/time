@@ -50,6 +50,124 @@ export const initializeDB = (): Promise<boolean> => {
     })
 }
 
+export const insertAllToIndexedDB = async (data: Record<string, Array<{key: IDBValidKey, value: any}>>) => {
+    let request: IDBOpenDBRequest;
+    let db: IDBDatabase;
+    const version = VERSION;
+
+    return new Promise<boolean>((resolve) => {
+        request = indexedDB.open(TIMERS_DB, version);
+        console.log('Opening database version:', version);
+
+        request.onsuccess = async () => {
+            db = request.result;
+            console.log('request.onsuccess - insertAllToIndexedDB', db.version);
+            
+            try {
+                // Process each store's data sequentially
+                for (const [storeName, items] of Object.entries(data)) {
+                    const tx = db.transaction(storeName, 'readwrite');
+                    const store = tx.objectStore(storeName);
+
+                    // Wait for all items in current store to be added
+                    await Promise.all(items.map(item => 
+                        new Promise<void>((resolveItem, rejectItem) => {
+                            const request = store.put(item.value, item.key);
+                            request.onsuccess = () => resolveItem();
+                            request.onerror = () => {
+                                console.error(`Error adding item to ${storeName}:`, request.error);
+                                rejectItem(request.error);
+                            };
+                        })
+                    ));
+                }
+                resolve(true);
+            } catch (error) {
+                console.error('Error inserting data:', error);
+                resolve(false);
+            }
+        };
+
+        request.onerror = (event) => {
+            console.error('Error opening database:', (event.target as IDBRequest).error);
+            resolve(false);
+        };
+    });
+};
+
+export const getAllFromIndexedDB = async () => {
+    let request: IDBOpenDBRequest;
+    let db: IDBDatabase;
+    const version = VERSION;
+    type CombinedData = {
+        [x: string]: any;
+    }
+    return new Promise<CombinedData>((resolve) => {
+        request = indexedDB.open(TIMERS_DB, version);
+        console.log('Opening database version:', version);
+
+        request.onsuccess = async () => {
+            db = request.result;
+            console.log('request.onsuccess - getAllFromIndexedDB', db.version);
+            
+            const tx = db.transaction(db.objectStoreNames, 'readonly');
+            const stores = Array.from(db.objectStoreNames).map((storeName) => tx.objectStore(storeName));
+            
+            type StoreResult = { 
+                storeName: string; 
+                data: Array<{
+                    key: IDBValidKey;
+                    value: any;
+                }> 
+            };
+
+            const dataPromises = stores.map((store) =>
+                new Promise<StoreResult>((resolveStore) => {
+                    const request = store.openCursor();
+                    const storeData: Array<{key: IDBValidKey; value: any}> = [];
+
+                    request.onsuccess = (event) => {
+                        const cursor = (event.target as IDBRequest).result as IDBCursorWithValue;
+                        if (cursor) {
+                            storeData.push({
+                                key: cursor.key,
+                                value: cursor.value
+                            });
+                            cursor.advance(1); // Using advance(1) instead of continue()
+                        } else {
+                            resolveStore({
+                                storeName: store.name,
+                                data: storeData
+                            });
+                        }
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Error getting data from store:', store.name);
+                        resolveStore({
+                            storeName: store.name,
+                            data: []
+                        });
+                    }
+                })
+            );
+
+            const results = await Promise.all(dataPromises);
+            const combinedData = results.reduce((acc: Record<string, any>, curr) => ({
+                ...acc,
+                [curr.storeName]: curr.data
+            }), {});
+
+            resolve(combinedData);
+        }
+
+        request.onerror = (event) => {
+            console.error('Error opening database:', (event.target as IDBRequest).error);
+            resolve({});
+        }
+    });
+};
+
 export const addTimer = (timer: Omit<TimerModel, 'newTask' | 'newTag'>): Promise<boolean> => {
     let request: IDBOpenDBRequest;
     let db: IDBDatabase;
