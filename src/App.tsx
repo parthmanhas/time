@@ -159,7 +159,7 @@ function App() {
 
     const indexedDBData = await getAllFromIndexedDB();
     // get result of all requests
-    const ref = collection(db, "users", user.uid);
+    const ref = collection(db, "data/users", user.uid);
 
     for (const [key, value] of Object.entries(indexedDBData)) {
       await setDoc(doc(ref, key), { [key]: value });
@@ -173,7 +173,7 @@ function App() {
       return;
     }
 
-    const ref = collection(db, "users", user.uid);
+    const ref = collection(db, "data/users", user.uid);
     const snapshot = await getDocs(ref);
     let combinedData: Record<string, { key: IDBValidKey; value: any; }[]> = {};
     new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve) => {
