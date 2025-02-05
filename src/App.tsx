@@ -189,6 +189,11 @@ function App() {
     });
   }
 
+  const syncData = async () => {
+    await syncToFirebase();
+    await syncFromFirebase();
+  }
+
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
       {/* Add logout button */}
@@ -196,8 +201,7 @@ function App() {
         {!user && <Login />}
         {user &&
           <div className="flex gap-2">
-            <button onClick={syncToFirebase} className="btn btn-sm btn-outline">Upload data</button>
-            <button onClick={syncFromFirebase} className="btn btn-sm btn-outline">Download data</button>
+            <button onClick={syncData} className="btn btn-sm btn-outline">Sync Data</button>
             <button onClick={logout} className="btn btn-sm btn-outline">Logout</button>
           </div>
         }
