@@ -95,7 +95,9 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
             return;
         }
 
-        saveTimer({ ...state.currentTimer, status: 'QUEUED' });
+        const currentTags = [...state.currentTimer.tags, state.currentTimer.newTag].filter(tag => tag !== '');
+
+        saveTimer({ ...state.currentTimer, status: 'QUEUED', tags: currentTags });
         resetCurrentTimer();
     }
 
