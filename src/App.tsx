@@ -8,7 +8,7 @@ import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
-import { collection, addDoc, setDoc, doc, getDocs, deleteDoc } from "firebase/firestore";
+import { collection, setDoc, doc, getDocs } from "firebase/firestore";
 import { db } from "./config/firebase";
 
 function App() {
@@ -176,7 +176,7 @@ function App() {
     const snapshot = await getDocs(ref);
     console.log(snapshot)
     let combinedData: Record<string, { key: IDBValidKey; value: any; }[]> = {};
-    new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve, reject) => {
+    new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve) => {
       snapshot.forEach(doc => {
         combinedData = { ...combinedData, ...doc.data() } as Record<string, { key: IDBValidKey; value: any; }[]>;
       });

@@ -3,7 +3,6 @@ import { TimerModel, TimerState } from "../types";
 import { Timer } from "./timer";
 import { RoutinesContainer } from "./routines-container";
 import { cn } from "../utils";
-import { Login } from "./Login";
 
 type TimerRoutinesContainerProps = {
     id?: string;
