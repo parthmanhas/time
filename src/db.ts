@@ -68,11 +68,20 @@ export const insertAllToIndexedDB = async (data: Record<string, Array<{key: IDBV
                 for (const [storeName, items] of Object.entries(data)) {
                     const tx = db.transaction(storeName, 'readwrite');
                     const store = tx.objectStore(storeName);
+                    const hasKeyPath = store.keyPath !== null;
 
                     // Wait for all items in current store to be added
                     await Promise.all(items.map(item => 
                         new Promise<void>((resolveItem, rejectItem) => {
-                            const request = store.put(item.value, item.key);
+                            let request;
+                            if (hasKeyPath) {
+                                // For stores with keyPath (like timers store), only pass the value
+                                request = store.put(item.value);
+                            } else {
+                                // For stores without keyPath, pass both key and value
+                                request = store.put(item.value, item.key);
+                            }
+                            
                             request.onsuccess = () => resolveItem();
                             request.onerror = () => {
                                 console.error(`Error adding item to ${storeName}:`, request.error);
