@@ -8,7 +8,7 @@ import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
-import { collection, setDoc, doc, getDocs, getDoc } from "firebase/firestore";
+import { collection, setDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "./config/firebase";
 
 function App() {
