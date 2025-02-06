@@ -216,7 +216,7 @@ function App() {
           <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
             <TimerRoutinesContainer
               mobile={true}
-              className="w-full h-full flex flex-col items-center justify-center"
+              className="w-full h-full flex flex-col pt-[10vh] items-center"
               addRoutine={addRoutine}
               addRoutineButtonClick={addRoutineButtonClick}
               clearRoutine={clearRoutine}
@@ -233,7 +233,7 @@ function App() {
 
           <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
             <Charts
-              className="w-full h-full"
+              className="w-full h-full pt-[5vh]"
               state={state}
               mobile={true}
             />
@@ -251,7 +251,7 @@ function App() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 bg-black">
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center gap-2 py-5 bg-black">
           <a href="#timer-container" className="btn btn-md">timer</a>
           <a href="#charts" className="btn btn-md">charts</a>
           <a href="#timers-list" className="btn btn-md">history</a>

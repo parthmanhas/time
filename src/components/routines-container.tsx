@@ -21,7 +21,7 @@ export function RoutinesContainer({ state, dbReady, setState, addRoutine, addRou
         setState(prev => ({ ...prev, selectedRoutine: state.routines[0] }))
     }
     return (
-        <div className='h-[500px] w-full p-5 sm:p-0 max-w-sm'>
+        <div className='h-[500px] w-full px-5 max-w-sm'>
             <div className="flex justify-center gap-2">
                 <input
                     value={state.newRoutine}

@@ -17,7 +17,7 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
             className={
                 cn(
                     className && className,
-                    mobile && "h-screen sm:hidden flex items-center",
+                    mobile && "h-screen sm:hidden flex items-start",
                     !mobile && "hidden sm:h-full sm:flex justify-center tabs tabs-border opacity-20 hover:opacity-100",
                 )
             }>
