@@ -1,4 +1,4 @@
-import { TimerModel, TimerState } from "../types"
+import { TimerModel, TimerState, TimerStatus } from "../types"
 import { cn } from "../utils"
 import { formatTime } from "../lib"
 import { useState } from "react"
@@ -15,7 +15,7 @@ type CompletedTimersProps = {
 }
 
 export const CompletedAndPausedTimers = ({ id, className, mobile = false, state, setState, workerRef, removeTimer }: CompletedTimersProps) => {
-    const [filterBy, setFilterBy] = useState<'PAUSED' | 'COMPLETED'>('PAUSED');
+    const [filterBy, setFilterBy] = useState<Omit<TimerStatus, 'ACTIVE' | 'PAUSED'>>('QUEUED');
 
     const filteredTimers = state.timers.filter(timer => timer.status === filterBy);
 
@@ -36,10 +36,10 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
         )}>
             <div className="flex justify-center gap-2 p-2">
                 <button
-                    onClick={() => setFilterBy('PAUSED')}
+                    onClick={() => setFilterBy('QUEUED')}
                     className={cn(
                         "btn btn-sm btn-ghost gap-2",
-                        filterBy === 'PAUSED' && "btn-active"
+                        filterBy === 'QUEUED' && "btn-active"
                     )}
                 >
                     <PauseCircle size={18} />
