@@ -189,7 +189,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                         )} onClick={() => addTagButtonClick()}><Plus /></Button> */}
                         <datalist id="existing-tags">
                             {Array.from(new Set(state.timers.map(timer => [...timer.tags]).flat())).map(tag => (
-                                <option value={tag}>{tag}</option>
+                                <option key={tag} value={tag}>{tag}</option>
                             ))}
                         </datalist>
                     </div>

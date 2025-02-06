@@ -8,7 +8,7 @@ import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
-import { collection, setDoc, doc, getDocs } from "firebase/firestore";
+import { collection, setDoc, doc, getDocs, getDoc } from "firebase/firestore";
 import { db } from "./config/firebase";
 
 function App() {
@@ -158,36 +158,37 @@ function App() {
     }
 
     const indexedDBData = await getAllFromIndexedDB();
-    // get result of all requests
-    const ref = collection(db, "data/users", user.uid);
+    const ref = collection(db, "users");
 
-    for (const [key, value] of Object.entries(indexedDBData)) {
-      await setDoc(doc(ref, key), { [key]: value });
-    }
+    await setDoc(doc(ref, user.uid), indexedDBData)
+
     console.log("Synced IndexedDB to Firebase ✅");
   }
 
-  const syncFromFirebase = async () => {
-    if (!user) {
-      console.error('user not logged in');
-      return;
-    }
-
-    const ref = collection(db, "data/users", user.uid);
-    const snapshot = await getDocs(ref);
-    let combinedData: Record<string, { key: IDBValidKey; value: any; }[]> = {};
-    new Promise<Record<string, { key: IDBValidKey; value: any; }[]>>((resolve) => {
-      snapshot.forEach(doc => {
-        combinedData = { ...combinedData, ...doc.data() } as Record<string, { key: IDBValidKey; value: any; }[]>;
-      });
-      resolve(combinedData);
-    }).then(async (data) => {
-      await insertAllToIndexedDB(data);
-      await refreshTimers();
-      await refreshRoutines();
-      console.log("Synced Firebase to IndexedDB ✅");
-    });
-  }
+   const syncFromFirebase = async () => {
+      if (!user) {
+          console.error('user not logged in');
+          return;
+      }
+  
+      try {
+          const docRef = doc(db, "users", user.uid);
+          const snapshot = await getDoc(docRef);
+          
+          if (!snapshot.exists()) {
+              console.log("No data found in Firebase");
+              return;
+          }
+  
+          const data = snapshot.data() as Record<string, Array<{ key: IDBValidKey; value: any }>>;
+          await insertAllToIndexedDB(data);
+          await refreshTimers();
+          await refreshRoutines();
+          console.log("Synced Firebase to IndexedDB ✅");
+      } catch (error) {
+          console.error("Error syncing from Firebase:", error);
+      }
+  };
 
   const syncData = async () => {
     await syncToFirebase();
