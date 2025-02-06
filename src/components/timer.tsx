@@ -1,4 +1,6 @@
-import { TimerModel, TimerState, TimerStatus } from "../types"
+import { useAuth } from "../contexts/AuthContext"
+import { createUpdateTimer } from "../db"
+import { TimerModel, AppState, TimerStatus } from "../types"
 import { cn } from "../utils"
 import { Wave } from "./Wave"
 
@@ -13,14 +15,15 @@ const formatSeconds = (time: number) => {
 type TimerProps = {
     className?: string,
     mobile?: boolean
-    state: TimerState,
-    setState: React.Dispatch<React.SetStateAction<TimerState>>,
-    saveTimer: (timer: TimerModel) => void,
+    state: AppState,
+    setState: React.Dispatch<React.SetStateAction<AppState>>,
     getNewTimer: () => TimerModel,
     workerRef: React.MutableRefObject<Worker | null>
 }
 
-export const Timer = ({ className, mobile = false, state, setState, saveTimer, getNewTimer, workerRef }: TimerProps) => {
+export const Timer = ({ className, mobile = false, state, setState, getNewTimer, workerRef }: TimerProps) => {
+
+    const { user } = useAuth();
 
     const addTime = (seconds: number) => {
         setState(prev => ({
@@ -35,10 +38,10 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
     }
 
     const addTag = (key: React.KeyboardEvent<HTMLInputElement>) => {
-        if (key.code === 'Enter' && state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1) {
-            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
+        if (key.code === 'Enter' && state.currentTimer.newTag && state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1) {
+            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, state.currentTimer.newTag as string], newTag: '' } }));
         } else {
-            console.error('tag already exists')
+            console.error('tag already exists or is empty')
         }
     }
 
@@ -48,24 +51,24 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
 
     const addTask = (key: React.KeyboardEvent<HTMLInputElement>) => {
         if (key.code === 'Enter') {
-            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask, newTask: '' } }));
+            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask || '', newTask: '' } }));
         }
     }
 
     const toggleTimer = () => {
         if (state.currentTimer.status === 'PAUSED') {
             // add task
-            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask, newTask: '' } }));
+            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, task: prev.currentTimer.newTask || '', newTask: '' } }));
             // add tag
-            if (state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1 && state.currentTimer.newTag !== '') {
-                setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag], newTag: '' } }));
+            if (state.currentTimer.newTag && state.currentTimer.tags.indexOf(state.currentTimer.newTag) === -1 && state.currentTimer.newTag !== '') {
+                setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, tags: [...prev.currentTimer.tags, prev.currentTimer.newTag!], newTag: '' } }));
             } else {
                 console.error('tag already exists or empty')
             }
         }
-        setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: prev.currentTimer.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE' } }));
+        setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: prev.currentTimer.status === 'RUNNING' ? 'PAUSED' : 'RUNNING' } }));
         workerRef.current?.postMessage({
-            type: state.currentTimer.status === 'ACTIVE' ? 'STOP_TIMER' : 'START_TIMER',
+            type: state.currentTimer.status === 'RUNNING' ? 'STOP_TIMER' : 'START_TIMER',
             payload: { id: state.currentTimer.id, remaining_time: state.currentTimer.remaining_time },
         });
     }
@@ -83,11 +86,13 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
     }
 
     const completeTimer = () => {
-        saveTimer({ ...state.currentTimer, status: 'COMPLETED' });
+        setState(prev => ({ ...prev, currentTimer: getNewTimer(), timers: [...prev.timers.filter(timer => timer.id !== prev.currentTimer.id), { ...prev.currentTimer, status: 'COMPLETED' }] }));
         resetCurrentTimer();
         workerRef.current?.postMessage({
             type: "STOP_TIMER"
         });
+        if (!user) return;
+        createUpdateTimer({ ...state.currentTimer, status: 'COMPLETED' }, user.uid);
     }
 
     const queueTimer = () => {
@@ -96,14 +101,16 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
             return;
         }
 
-        const currentTags = [...state.currentTimer.tags, state.currentTimer.newTag].filter(tag => tag !== '');
+        const currentTags = [...state.currentTimer.tags, state.currentTimer.newTag].filter((tag): tag is string => tag !== '' && tag !== undefined);
 
-        saveTimer({ ...state.currentTimer, status: 'QUEUED', tags: currentTags });
+        setState(prev => ({ ...prev, timers: [...prev.timers, { ...prev.currentTimer, status: 'QUEUED', tags: currentTags }] }));
         resetCurrentTimer();
+        if (!user) return;
+        createUpdateTimer({ ...state.currentTimer, status: 'QUEUED', tags: currentTags }, user.uid);
     }
 
     const resumeTimer = () => {
-        setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: 'ACTIVE' } }));
+        setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: 'RUNNING' } }));
         workerRef.current?.postMessage({
             type: 'START_TIMER',
             payload: { id: state.currentTimer.id, remaining_time: state.currentTimer.remaining_time }
@@ -114,9 +121,9 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
 
     return (
         <>
-            <Wave 
-                isRunning={state.currentTimer.status === 'ACTIVE'} 
-                progress={progress} 
+            <Wave
+                isRunning={state.currentTimer.status === 'RUNNING'}
+                progress={progress}
                 className="z-0"
             />
             <div className={cn(
@@ -126,11 +133,12 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
             )}>
                 <div className="flex flex-col gap-2 md:gap-3 w-full max-w-sm px-4 md:px-0">
                     {/* add time */}
+                    <button onClick={() => console.log(state.timers)}>log timers</button>
                     <div className="flex w-full justify-between gap-2 md:gap-3">
-                        <button disabled={state.currentTimer.status === 'ACTIVE' || state.currentTimer.duration + 600 >= 6000} onClick={() => addTime(600)} className="btn btn-outline text-lg md:text-2xl">+10</button>
-                        <button disabled={state.currentTimer.status === 'ACTIVE' || state.currentTimer.duration + 1200 >= 6000} onClick={() => addTime(1200)} className="btn btn-outline text-lg md:text-2xl">+20</button>
-                        <button disabled={state.currentTimer.status === 'ACTIVE' || state.currentTimer.duration + 1800 >= 6000} onClick={() => addTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
-                        <button disabled={state.currentTimer.status === 'ACTIVE' || state.currentTimer.duration + 3600 >= 6000} onClick={() => addTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 600 >= 6000} onClick={() => addTime(600)} className="btn btn-outline text-lg md:text-2xl">+10</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 1200 >= 6000} onClick={() => addTime(1200)} className="btn btn-outline text-lg md:text-2xl">+20</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 1800 >= 6000} onClick={() => addTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 3600 >= 6000} onClick={() => addTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
                     </div>
                     <h1 className="text-[7rem] sm:text-[8rem] countdown justify-center">
                         <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
@@ -155,11 +163,11 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                     }
                     <div className="flex gap-2">
                         <input
-                            disabled={state.currentTimer.status === 'ACTIVE'}
+                            disabled={state.currentTimer.status === 'RUNNING'}
                             type="text"
                             className={cn(
                                 "p-2 w-full rounded border",
-                                state.currentTimer.status === 'ACTIVE' && "hidden"
+                                state.currentTimer.status === 'RUNNING' && "hidden"
                             )}
                             value={state.currentTimer.newTask}
                             onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value, task: e.target.value } }))}
@@ -167,17 +175,17 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                             placeholder="add task title" />
                         {/* <Button size="icon" className={cn(
                             "cursor-pointer",
-                            state.currentTimer.status === 'ACTIVE' && "hidden"
+                            state.currentTimer.status === 'RUNNING' && "hidden"
                         )} onClick={() => addTaskButtonClick()}><Plus /></Button> */}
                     </div>
                     <div className="flex gap-2">
                         <input
-                            disabled={state.currentTimer.status === 'ACTIVE'}
+                            disabled={state.currentTimer.status === 'RUNNING'}
                             list="existing-tags"
                             type="text"
                             className={cn(
                                 "p-2 w-full rounded border",
-                                state.currentTimer.status === 'ACTIVE' && "hidden"
+                                state.currentTimer.status === 'RUNNING' && "hidden"
                             )}
                             value={state.currentTimer.newTag}
                             onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))}
@@ -185,7 +193,7 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                             placeholder="add tag(s), press enter to add" />
                         {/* <Button size="icon" className={cn(
                             "cursor-pointer",
-                            state.currentTimer.status === 'ACTIVE' && "hidden"
+                            state.currentTimer.status === 'RUNNING' && "hidden"
                         )} onClick={() => addTagButtonClick()}><Plus /></Button> */}
                         <datalist id="existing-tags">
                             {Array.from(new Set(state.timers.map(timer => [...timer.tags]).flat())).map(tag => (
@@ -193,11 +201,11 @@ export const Timer = ({ className, mobile = false, state, setState, saveTimer, g
                             ))}
                         </datalist>
                     </div>
-                    <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'ACTIVE' ? 'pause' : 'start'}</button>
+                    <button onClick={toggleTimer} className="btn btn-outline">{state?.currentTimer?.status === 'RUNNING' ? 'pause' : 'start'}</button>
                     <button onClick={() => { pauseTimer(); resetCurrentTimer(); }} className="btn btn-outline">reset</button>
                     {state.currentTimer.status === 'PAUSED' && <button onClick={queueTimer} className="btn btn-outline">do later</button>}
                     {state.currentTimer.status === 'PAUSED' && state.currentTimer.remaining_time !== state.currentTimer.duration && <button onClick={resumeTimer} className="btn btn-outline">resume</button>}
-                    {state.currentTimer.status === 'ACTIVE' && <button onClick={completeTimer} className="btn btn-outline">complete</button>}
+                    {state.currentTimer.status === 'RUNNING' && <button onClick={completeTimer} className="btn btn-outline">complete</button>}
                 </div>
             </div>
         </>

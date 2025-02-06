@@ -1,5 +1,5 @@
 import Last30DaysChart from "../Last30DaysChart"
-import { TimerState } from "../types"
+import { AppState } from "../types"
 import { cn } from "../utils"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 
@@ -7,7 +7,7 @@ type ChartsRoutinesProps = {
     id?: string,
     className?: string,
     mobile?: boolean,
-    state: TimerState,
+    state: AppState,
 }
 
 export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutinesProps) => {

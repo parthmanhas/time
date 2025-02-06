@@ -3,7 +3,6 @@
 import dayjs from "dayjs";
 import { cn } from "../utils";
 import { useEffect, useState } from "react";
-import { getRoutineCompletions, commitRoutineCompletion, deleteOneRoutineCompletion } from "../db";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
 
@@ -34,8 +33,8 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
             setSelectedDate(null);
             setCompletedDates({});
             try {
-                const completedDates = await getRoutineCompletions(name) as string[];
-                setCompletedDates(groupCompletionsByDate(completedDates));
+                // const completedDates = await getRoutineCompletions(name) as string[];
+                // setCompletedDates(groupCompletionsByDate(completedDates));
             } catch (err) {
                 console.error(err);
             }
@@ -44,22 +43,23 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
 
 
     const commitRoutine = async (date: string) => {
+        return;
         if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
             //return if completions > 6
             if (completedDates[date] && completedDates[date] > 5) return;
-            const updatedCompletions = await commitRoutineCompletion(name, new Date(date)) as string[];
-            const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-            setCompletedDates(updatedCompletionsGrouped);
+            // const updatedCompletions = await commitRoutineCompletion(name, new Date(date)) as string[];
+            // const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
+            // setCompletedDates(updatedCompletionsGrouped);
 
             // Show confetti when completing (not uncompleting)
-            if (updatedCompletionsGrouped[date]) {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#22C55E', '#16A34A', '#15803D', '#166534', '#14532D', '#124D28', '#0F3F1F', '#0D3A1B', '#0B2F15', '#092610', '#071F0B', '#051A07', '#031404']
-                });
-            }
+            // if (updatedCompletionsGrouped[date]) {
+            //     confetti({
+            //         particleCount: 100,
+            //         spread: 70,
+            //         origin: { y: 0.6 },
+            //         colors: ['#22C55E', '#16A34A', '#15803D', '#166534', '#14532D', '#124D28', '#0F3F1F', '#0D3A1B', '#0B2F15', '#092610', '#071F0B', '#051A07', '#031404']
+            //     });
+            // }
         };
     }
 
@@ -91,9 +91,9 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         onTouchStart={() => {
                                             const timer = setTimeout(async () => {
                                                 if (completedDates[date]) {
-                                                    const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
-                                                    const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-                                                    setCompletedDates(updatedCompletionsGrouped);
+                                                    // const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
+                                                    // const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
+                                                    // setCompletedDates(updatedCompletionsGrouped);
                                                 }
                                             }, 500);
                                             const cleanup = () => clearTimeout(timer);
@@ -102,11 +102,11 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         }}
                                         onMouseDown={() => {
                                             const timer = setTimeout(async () => {
-                                                if (completedDates[date]) {
-                                                    const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
-                                                    const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-                                                    setCompletedDates(updatedCompletionsGrouped);
-                                                }
+                                                // if (completedDates[date]) {
+                                                //     const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
+                                                //     const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
+                                                //     setCompletedDates(updatedCompletionsGrouped);
+                                                // }
                                             }, 500);
 
                                             const cleanup = () => clearTimeout(timer);

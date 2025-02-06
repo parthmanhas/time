@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { TimerModel, TimerState } from "../types";
+import { TimerModel, AppState } from "../types";
 import { Timer } from "./timer";
 import { RoutinesContainer } from "./routines-container";
 import { cn } from "../utils";
@@ -7,8 +7,8 @@ import { cn } from "../utils";
 type TimerRoutinesContainerProps = {
     id?: string;
     className?: string;
-    state: TimerState;
-    setState: React.Dispatch<React.SetStateAction<TimerState>>;
+    state: AppState;
+    setState: React.Dispatch<React.SetStateAction<AppState>>;
     getNewTimer: () => TimerModel;
     saveTimer: (timer: TimerModel) => Promise<void>;
     workerRef: React.MutableRefObject<Worker | null>;

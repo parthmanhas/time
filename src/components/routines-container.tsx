@@ -1,14 +1,14 @@
 import { Plus } from 'lucide-react'
 import { cn } from '../lib/utils'
-import { TimerState } from '../types'
+import { AppState } from '../types'
 import { Button } from './ui/button'
 import { Routines } from './routines'
 import { motion } from 'framer-motion';
 
 
 type RoutinesProps = {
-    state: TimerState,
-    setState: React.Dispatch<React.SetStateAction<TimerState>>,
+    state: AppState,
+    setState: React.Dispatch<React.SetStateAction<AppState>>,
     dbReady: boolean,
     addRoutine: (e: React.KeyboardEvent<HTMLInputElement>) => void
     addRoutineButtonClick: () => void
