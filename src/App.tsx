@@ -19,7 +19,9 @@ function App() {
   const handleInitDB = async () => {
     await initializeDB();
     setDbReady(true);
-    await syncFromFirebase();
+    if (user) {
+      await syncFromFirebase();
+    }
     await refreshTimers();
     await refreshRoutines();
   };
@@ -165,29 +167,29 @@ function App() {
     console.log("Synced IndexedDB to Firebase ✅");
   }
 
-   const syncFromFirebase = async () => {
-      if (!user) {
-          console.error('user not logged in');
-          return;
+  const syncFromFirebase = async () => {
+    if (!user) {
+      console.error('user not logged in');
+      return;
+    }
+
+    try {
+      const docRef = doc(db, "users", user.uid);
+      const snapshot = await getDoc(docRef);
+
+      if (!snapshot.exists()) {
+        console.log("No data found in Firebase");
+        return;
       }
-  
-      try {
-          const docRef = doc(db, "users", user.uid);
-          const snapshot = await getDoc(docRef);
-          
-          if (!snapshot.exists()) {
-              console.log("No data found in Firebase");
-              return;
-          }
-  
-          const data = snapshot.data() as Record<string, Array<{ key: IDBValidKey; value: any }>>;
-          await insertAllToIndexedDB(data);
-          await refreshTimers();
-          await refreshRoutines();
-          console.log("Synced Firebase to IndexedDB ✅");
-      } catch (error) {
-          console.error("Error syncing from Firebase:", error);
-      }
+
+      const data = snapshot.data() as Record<string, Array<{ key: IDBValidKey; value: any }>>;
+      await insertAllToIndexedDB(data);
+      await refreshTimers();
+      await refreshRoutines();
+      console.log("Synced Firebase to IndexedDB ✅");
+    } catch (error) {
+      console.error("Error syncing from Firebase:", error);
+    }
   };
 
   const syncData = async () => {
