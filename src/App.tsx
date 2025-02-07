@@ -39,17 +39,23 @@ function App() {
 
   const workerRef = useRef<Worker | null>(null);
 
-  const saveTimer = async (timer: TimerModel) => {
-    if (!user) return;
-    const { newTask, newTag, ...rest } = timer;
-    const newTimer: Omit<TimerModel, 'newTask' | 'newTag'> = {
-      ...rest,
-      completed_at: new Date().toISOString(),
-      task: timer.newTask || timer.task,
-      tags: timer.tags
+ 
+  const completeAndSaveTimer = async () => {
+    const completedTimer = {
+      ...state.currentTimer,
+      id: uuidv4(),   // use because id is being cached by workerRef useEffect
+      status: 'COMPLETED' as TimerStatus,
+      completed_at: new Date().toISOString()
     }
-    await createUpdateTimer(newTimer, user.uid);
-    await refreshTimers();
+    setState(prev => ({
+      ...prev,
+      currentTimer: getNewTimer(),
+      timers: [...prev.timers, completedTimer]
+    }))
+    if (!user) return;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { newTask, newTag, ...rest } = completedTimer;
+    await createUpdateTimer(rest, user.uid);
   }
 
   const refreshTimers = async () => {
@@ -95,7 +101,7 @@ function App() {
       refreshTimers();
       refreshRoutines();
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     if (!workerRef.current) {
@@ -117,19 +123,20 @@ function App() {
             document.title = `${formatTime(remaining_time)} - Timers`;
             break;
           case "TIMER_COMPLETED":
-            setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, status: 'COMPLETED' } }))
-            workerRef?.current?.postMessage({
-              type: 'STOP_TIMER'
-            });
-            if (state.currentTimer == null) {
-              console.error('timer completed but current timer null');
-              return;
+            {
+              workerRef?.current?.postMessage({
+                type: 'STOP_TIMER'
+              });
+              if (state.currentTimer == null) {
+                console.error('timer completed but current timer null');
+                return;
+              }
+              completeAndSaveTimer();
+              document.title = `Completed !`;
+              setTimeout(() => {
+                document.title = 'Time'
+              }, 5000)
             }
-            saveTimer(state.currentTimer);
-            document.title = `Completed !`;
-            setTimeout(() => {
-              document.title = 'Time'
-            }, 5000)
             break;
           default:
             document.title = `Time`;
@@ -174,7 +181,7 @@ function App() {
                 addRoutine={addRoutine}
                 addRoutineButtonClick={addRoutineButtonClick}
                 getNewTimer={getNewTimer}
-                saveTimer={saveTimer}
+                // saveTimer={saveTimer}
                 setTimerSelected={setTimerSelected}
                 state={state}
                 setState={setState}
@@ -220,7 +227,6 @@ function App() {
         addRoutine={addRoutine}
         addRoutineButtonClick={addRoutineButtonClick}
         getNewTimer={getNewTimer}
-        saveTimer={saveTimer}
         setTimerSelected={setTimerSelected}
         state={state}
         setState={setState}

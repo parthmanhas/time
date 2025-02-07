@@ -10,7 +10,6 @@ type TimerRoutinesContainerProps = {
     state: AppState;
     setState: React.Dispatch<React.SetStateAction<AppState>>;
     getNewTimer: () => TimerModel;
-    saveTimer: (timer: TimerModel) => Promise<void>;
     workerRef: React.MutableRefObject<Worker | null>;
     addRoutine: (key: React.KeyboardEvent<HTMLInputElement>) => Promise<void>;
     addRoutineButtonClick: () => Promise<void>;

@@ -6,7 +6,7 @@ import { CheckCircle2, PauseCircle } from "lucide-react"
 import dayjs from "dayjs"
 
 type CompletedTimersProps = {
-    id?: string,
+    // id?: string,
     className?: string,
     mobile?: boolean,
     state: AppState,
@@ -15,7 +15,7 @@ type CompletedTimersProps = {
     removeTimer: (id: string) => void
 }
 
-export const CompletedAndPausedTimers = ({ id, className, mobile = false, state, setState, workerRef, removeTimer }: CompletedTimersProps) => {
+export const CompletedAndPausedTimers = ({ className, mobile = false, state, setState, workerRef, removeTimer }: CompletedTimersProps) => {
     const [filterBy, setFilterBy] = useState<Omit<TimerStatus, 'RUNNING' | 'PAUSED'>>('QUEUED');
 
     const filteredTimers = state
@@ -45,7 +45,6 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
                 status: 'RUNNING',
                 newTask: prev.currentTimer.newTask || '',
                 newTag: prev.currentTimer.newTag || '',
-                task: prev.currentTimer.task || ''
             }
         }));
         workerRef.current?.postMessage({
@@ -54,7 +53,7 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
         });
     }
     return (
-        <div id={id} className={cn(
+        <div className={cn(
             className && className,
             mobile && "h-screen sm:hidden flex flex-col items-center",
             !mobile && "hidden sm:h-full w-full sm:flex sm:flex-col justify-start opacity-20 hover:opacity-100",
@@ -107,7 +106,6 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
                         </div>
                     ))}
                 </div>}
-
         </div>
     )
 }
