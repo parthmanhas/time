@@ -9,26 +9,25 @@ import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
 
+export const getNewTimer = () => {
+  return {
+    id: uuidv4(),
+    duration: 600,
+    remaining_time: 600,
+    status: 'PAUSED' as TimerStatus,
+    created_at: new Date().toISOString(),
+    completed_at: '',
+    tags: [] as string[],
+    task: '',
+    newTask: '',
+    newTag: ''
+  } as TimerModel
+}
+
 function App() {
   const { user, logout } = useAuth();
   const [timerSelected, setTimerSelected] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // 640px matches sm: breakpoint
-
-
-  const getNewTimer = () => {
-    return {
-      id: uuidv4(),
-      duration: 600,
-      remaining_time: 600,
-      status: 'PAUSED' as TimerStatus,
-      created_at: new Date().toISOString(),
-      completed_at: '',
-      tags: [] as string[],
-      task: '',
-      newTask: '',
-      newTag: ''
-    } as TimerModel
-  }
 
   const [state, setState] = useState<AppState>({
     currentTimer: getNewTimer(),

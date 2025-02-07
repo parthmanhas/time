@@ -86,7 +86,7 @@ export function RoutinesContainer({ state, setState }: RoutinesProps) {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <Routines name={state.selectedRoutine} state={state} />
+                            <Routines name={state.selectedRoutine} state={state} setState={setState} />
                         </motion.div>
                         :
                         <p className="text-center pt-10">select a routine to display</p>

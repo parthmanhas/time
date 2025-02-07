@@ -6,8 +6,9 @@ import { useState } from "react";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
 import { AppState } from "../types";
-import { commitRoutine, deleteOneRoutineCompletion as deleteOneRoutineCompletions } from "../db";
+import { commitRoutine, createUpdateTimer, deleteOneRoutineCompletion as deleteOneRoutineCompletions, deleteTimer } from "../db";
 import { useAuth } from "../contexts/AuthContext";
+import { getNewTimer } from "../App";
 
 const generateCurrentYearDates = () => {
     const startOfYear = dayjs().startOf('year');
@@ -23,7 +24,7 @@ const generateCurrentYearDates = () => {
 
     return dates;
 }
-export const Routines = ({ name, state }: { name: string, state: AppState }) => {
+export const Routines = ({ name, state, setState }: { name: string, state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>> }) => {
 
     const dates = generateCurrentYearDates();
     const [completions, setCompletions] = useState<Record<string, number>>(groupCompletionsByDate((state.routines.find(routine => routine.name === name)?.completions || []).map(date => dayjs(date).format('YYYY-MM-DD'))));
@@ -52,6 +53,10 @@ export const Routines = ({ name, state }: { name: string, state: AppState }) => 
             randomDate.setMinutes(Math.floor(Math.random() * 60));
             randomDate.setSeconds(Math.floor(Math.random() * 60));
             commitRoutine(name, randomDate, user.uid);
+            // add default time of 10 minutes for a routine completion
+            const timer = { ...getNewTimer(), duration: 600, completed_at: new Date().toISOString(), status: "COMPLETED" as const, task: name, tags: [name] };
+            createUpdateTimer(timer, user.uid);
+            setState(prev => ({ ...prev, timers: [...prev.timers, timer] }));
         };
     }
 
@@ -89,6 +94,9 @@ export const Routines = ({ name, state }: { name: string, state: AppState }) => 
                                                     })
                                                     if (!user) return;
                                                     deleteOneRoutineCompletions(name, new Date(date), user.uid);
+                                                    const timersToDelete = state.timers.filter(timer => timer.task === name && dayjs(timer.completed_at).isSame(new Date(date), 'day'));
+                                                    timersToDelete.forEach(timer => deleteTimer(timer.id, user.uid));
+                                                    setState(prev => ({ ...prev, timers: prev.timers.filter(timer => !timersToDelete.includes(timer)) }));
                                                 }
                                             }, 500);
                                             const cleanup = () => clearTimeout(timer);
@@ -105,6 +113,10 @@ export const Routines = ({ name, state }: { name: string, state: AppState }) => 
                                                     })
                                                     if (!user) return;
                                                     deleteOneRoutineCompletions(name, new Date(date), user.uid);
+                                                    const timersToDelete = state.timers.filter(timer => timer.task === name && dayjs(timer.completed_at).isSame(new Date(date), 'day'));
+                                                    console.log(timersToDelete);
+                                                    timersToDelete.forEach(timer => deleteTimer(timer.id, user.uid));
+                                                    setState(prev => ({ ...prev, timers: prev.timers.filter(timer => !timersToDelete.includes(timer)) }));
                                                 }
                                             }, 500);
 
