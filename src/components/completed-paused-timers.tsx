@@ -21,10 +21,19 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
     const filteredTimers = state.timers.filter(timer => timer.status === filterBy).sort((a, b) => filterBy === 'COMPLETED' ? new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime() : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     const resumeTimer = (timer: TimerModel) => {
-        setState(prev => ({ ...prev, currentTimer: { ...timer, status: 'RUNNING' } }));
+        setState(prev => ({
+            ...prev,
+            currentTimer: {
+                ...timer,
+                status: 'RUNNING',
+                newTask: prev.currentTimer.newTask || '',
+                newTag: prev.currentTimer.newTag || '',
+                task: prev.currentTimer.task || ''
+            }
+        }));
         workerRef.current?.postMessage({
             type: 'START_TIMER',
-            payload: { id: state.currentTimer.id, remaining_time: state.currentTimer.remaining_time }
+            payload: { id: timer.id, remaining_time: timer.remaining_time }
         });
     }
     return (
@@ -72,7 +81,7 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
 
                             <div className="flex w-full justify-between">
                                 <p>{timer.task || 'some task'}</p>
-                                <p>{formatTime(timer.duration)}</p>
+                                <p>{formatTime(timer.remaining_time)}</p>
                             </div>
                             <div className="flex w-full justify-between">
                                 <p>[{timer.tags.join(',')}]</p>
