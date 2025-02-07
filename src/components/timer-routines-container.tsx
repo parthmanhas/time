@@ -12,7 +12,6 @@ type TimerRoutinesContainerProps = {
     getNewTimer: () => TimerModel;
     saveTimer: (timer: TimerModel) => Promise<void>;
     workerRef: React.MutableRefObject<Worker | null>;
-    dbReady: boolean;
     addRoutine: (key: React.KeyboardEvent<HTMLInputElement>) => Promise<void>;
     addRoutineButtonClick: () => Promise<void>;
     timerSelected: boolean;
@@ -27,7 +26,6 @@ export function TimerRoutinesContainer({
     setState,
     getNewTimer,
     workerRef,
-    dbReady,
     addRoutineButtonClick,
     timerSelected,
     setTimerSelected,
@@ -74,7 +72,6 @@ export function TimerRoutinesContainer({
                         <RoutinesContainer
                             state={state}
                             setState={setState}
-                            dbReady={dbReady}
                             addRoutineButtonClick={addRoutineButtonClick}
                         />
                     </motion.div>

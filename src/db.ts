@@ -2,12 +2,6 @@ import { RoutineWithCompletions, TimerModel } from "./types";
 import { collection, doc, getDocs, setDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 import { db } from './config/firebase';
 
-const TIMERS_DB = 'time-db';
-const TIMERS_STORE = 'timers';
-const ROUTINES_COMPLETION_STORE = 'routines-completion';
-const ROUTINES_STORE = 'routines';
-
-
 export const createUpdateTimer = async (timer: TimerModel, userId: string) => {
     const timerRef = doc(db, `usersTest/${userId}/timers/${timer.id}`);
     await setDoc(timerRef, timer);

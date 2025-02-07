@@ -11,7 +11,6 @@ import { useAuth } from '../contexts/AuthContext'
 type RoutinesProps = {
     state: AppState,
     setState: React.Dispatch<React.SetStateAction<AppState>>,
-    dbReady: boolean,
     addRoutineButtonClick: () => void
 }
 

@@ -2,7 +2,7 @@
 
 import dayjs from "dayjs";
 import { cn } from "../utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
 import { AppState } from "../types";

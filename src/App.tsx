@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
-import { createUpdateTimer, deleteRoutine, deleteTimer, getRoutines, getTimers } from "./db";
+import { createUpdateTimer, deleteTimer, getRoutines, getTimers } from "./db";
 import { TimerModel, AppState, TimerStatus, RoutineWithCompletions } from "./types";
 import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
@@ -11,7 +11,6 @@ import { Login } from "./components/Login";
 
 function App() {
   const { user, logout } = useAuth();
-  const [dbReady, setDbReady] = useState(true);
   const [timerSelected, setTimerSelected] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // 640px matches sm: breakpoint
 
@@ -175,7 +174,6 @@ function App() {
                 className="w-full h-full flex flex-col items-center justify-center"
                 addRoutine={addRoutine}
                 addRoutineButtonClick={addRoutineButtonClick}
-                dbReady={dbReady}
                 getNewTimer={getNewTimer}
                 saveTimer={saveTimer}
                 setTimerSelected={setTimerSelected}
@@ -222,7 +220,6 @@ function App() {
         className="hidden sm:flex flex-col items-center h-[500px] pt-[10vh]"
         addRoutine={addRoutine}
         addRoutineButtonClick={addRoutineButtonClick}
-        dbReady={dbReady}
         getNewTimer={getNewTimer}
         saveTimer={saveTimer}
         setTimerSelected={setTimerSelected}
