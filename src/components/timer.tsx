@@ -86,13 +86,13 @@ export const Timer = ({ className, mobile = false, state, setState, getNewTimer,
     }
 
     const completeTimer = () => {
-        setState(prev => ({ ...prev, currentTimer: getNewTimer(), timers: [...prev.timers.filter(timer => timer.id !== prev.currentTimer.id), { ...prev.currentTimer, status: 'COMPLETED' }] }));
+        setState(prev => ({ ...prev, currentTimer: getNewTimer(), timers: [...prev.timers.filter(timer => timer.id !== prev.currentTimer.id), { ...prev.currentTimer, status: 'COMPLETED', completed_at: new Date().toISOString() }] }));
         resetCurrentTimer();
         workerRef.current?.postMessage({
             type: "STOP_TIMER"
         });
         if (!user) return;
-        createUpdateTimer({ ...state.currentTimer, status: 'COMPLETED' }, user.uid);
+        createUpdateTimer({ ...state.currentTimer, status: 'COMPLETED', completed_at: new Date().toISOString() }, user.uid);
     }
 
     const queueTimer = () => {
@@ -133,7 +133,6 @@ export const Timer = ({ className, mobile = false, state, setState, getNewTimer,
             )}>
                 <div className="flex flex-col gap-2 md:gap-3 w-full max-w-sm px-4 md:px-0">
                     {/* add time */}
-                    <button onClick={() => console.log(state.timers)}>log timers</button>
                     <div className="flex w-full justify-between gap-2 md:gap-3">
                         <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 600 >= 6000} onClick={() => addTime(600)} className="btn btn-outline text-lg md:text-2xl">+10</button>
                         <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 1200 >= 6000} onClick={() => addTime(1200)} className="btn btn-outline text-lg md:text-2xl">+20</button>
@@ -172,11 +171,7 @@ export const Timer = ({ className, mobile = false, state, setState, getNewTimer,
                             value={state.currentTimer.newTask}
                             onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTask: e.target.value, task: e.target.value } }))}
                             onKeyDown={addTask}
-                            placeholder="add task title" />
-                        {/* <Button size="icon" className={cn(
-                            "cursor-pointer",
-                            state.currentTimer.status === 'RUNNING' && "hidden"
-                        )} onClick={() => addTaskButtonClick()}><Plus /></Button> */}
+                            placeholder="enter task" />
                     </div>
                     <div className="flex gap-2">
                         <input
@@ -190,7 +185,7 @@ export const Timer = ({ className, mobile = false, state, setState, getNewTimer,
                             value={state.currentTimer.newTag}
                             onChange={e => setState(prev => ({ ...prev, currentTimer: { ...prev.currentTimer, newTag: e.target.value } }))}
                             onKeyDown={addTag}
-                            placeholder="add tag(s), press enter to add" />
+                            placeholder="enter tag" />
                         {/* <Button size="icon" className={cn(
                             "cursor-pointer",
                             state.currentTimer.status === 'RUNNING' && "hidden"

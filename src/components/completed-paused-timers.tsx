@@ -3,6 +3,7 @@ import { cn } from "../utils"
 import { formatTime } from "../lib"
 import { useState } from "react"
 import { CheckCircle2, PauseCircle } from "lucide-react"
+import dayjs from "dayjs"
 
 type CompletedTimersProps = {
     id?: string,
@@ -18,7 +19,6 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
     const [filterBy, setFilterBy] = useState<Omit<TimerStatus, 'RUNNING' | 'PAUSED'>>('QUEUED');
 
     const filteredTimers = state.timers.filter(timer => timer.status === filterBy);
-
 
     const resumeTimer = (timer: TimerModel) => {
         setState(prev => ({ ...prev, currentTimer: { ...timer, status: 'RUNNING' } }));
@@ -39,7 +39,7 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
                     onClick={() => setFilterBy('QUEUED')}
                     className={cn(
                         "btn btn-sm btn-ghost gap-2",
-                        filterBy === 'QUEUED' && "btn-RUNNING"
+                        filterBy === 'QUEUED' && "btn-active"
                     )}
                 >
                     <PauseCircle size={18} />
@@ -76,7 +76,7 @@ export const CompletedAndPausedTimers = ({ id, className, mobile = false, state,
                             </div>
                             <div className="flex w-full justify-between">
                                 <p>[{timer.tags.join(',')}]</p>
-                                <p>{new Date(timer.completed_at).toLocaleDateString()}</p>
+                                {timer.completed_at && <p>{dayjs(timer.completed_at).format('DD-MM-YYYY')}</p>}
                             </div>
                         </div>
                     ))}

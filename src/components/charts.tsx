@@ -23,15 +23,15 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
             }>
             <Tabs defaultValue="30days" className="w-full">
                 <TabsList className="bg-transparent flex justify-center">
-                    <TabsTrigger value="30days" className="cursor-pointer">30 Days</TabsTrigger>
-                    <TabsTrigger value="30daysTags" className="cursor-pointer">30 Days Tags</TabsTrigger>
+                    <TabsTrigger value="30days" className="cursor-pointer">30 days</TabsTrigger>
+                    <TabsTrigger value="30daysTags" className="cursor-pointer">30 days tags</TabsTrigger>
                 </TabsList>
                 <TabsContent value="30days" className="h-[550px] overflow-scroll">
                     {state.timers.length > 0
                         ?
                         <Last30DaysChart timers={state.timers} />
                         :
-                        <div className="flex items-center justify-center h-full">No data</div>
+                        <div className="flex items-center justify-center h-full">no data</div>
                     }
                 </TabsContent>
                 <TabsContent value="30daysTags" className="h-[550px] overflow-scroll">
@@ -39,7 +39,7 @@ export const Charts = ({ id, className, mobile = false, state, }: ChartsRoutines
                         ?
                         <Last30DaysChart showTags={true} timers={state.timers} />
                         :
-                        <div className="flex items-center justify-center h-full">No data</div>
+                        <div className="flex items-center justify-center h-full">no data</div>
                     }
                 </TabsContent>
             </Tabs>

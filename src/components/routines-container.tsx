@@ -89,10 +89,10 @@ export function RoutinesContainer({ state, setState }: RoutinesProps) {
                             <Routines name={state.selectedRoutine} state={state} />
                         </motion.div>
                         :
-                        <p className="text-center pt-10">Select a routine to display</p>
+                        <p className="text-center pt-10">select a routine to display</p>
                     }
                 </> :
-                <div className="flex justify-center pt-16">No routines yet</div>
+                <div className="flex justify-center pt-16">no routines yet</div>
             }
         </div>
     )
