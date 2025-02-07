@@ -9,34 +9,34 @@ export const createUpdateTimer = async (timer: TimerModel, userId: string) => {
 };
 
 export const getTimers = async (userId: string): Promise<TimerModel[]> => {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999);
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+    thirtyDaysAgo.setHours(0, 0, 0, 0);
 
     const timersRef = collection(db, `users/${userId}/timers`);
 
-    // show completed only todays
+    // Get completed timers from last 30 days
     const completedTimersQuery = query(
         timersRef,
         where('status', '==', 'COMPLETED'),
-        where('completed_at', '>=', startOfDay.toISOString()),
-        where('completed_at', '<=', endOfDay.toISOString())
+        where('completed_at', '>=', thirtyDaysAgo.toISOString())
     );
 
+    // Get queued and paused timers from last 30 days
     const otherThanCompletedTimersQuery = query(
         timersRef,
         where('status', 'in', ['QUEUED', 'PAUSED']),
-        where('created_at', '>=', startOfDay.toISOString()),
-        where('created_at', '<=', endOfDay.toISOString())
+        where('created_at', '>=', thirtyDaysAgo.toISOString())
     );
 
+    // Execute both queries in parallel
     const [completedSnapshot, activeSnapshot] = await Promise.all([
         getDocs(completedTimersQuery),
         getDocs(otherThanCompletedTimersQuery)
     ]);
 
+    // Combine and return results
     return [
         ...completedSnapshot.docs.map(doc => doc.data() as TimerModel),
         ...activeSnapshot.docs.map(doc => doc.data() as TimerModel)

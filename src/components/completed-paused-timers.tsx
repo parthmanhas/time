@@ -18,7 +18,24 @@ type CompletedTimersProps = {
 export const CompletedAndPausedTimers = ({ id, className, mobile = false, state, setState, workerRef, removeTimer }: CompletedTimersProps) => {
     const [filterBy, setFilterBy] = useState<Omit<TimerStatus, 'RUNNING' | 'PAUSED'>>('QUEUED');
 
-    const filteredTimers = state.timers.filter(timer => timer.status === filterBy).sort((a, b) => filterBy === 'COMPLETED' ? new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime() : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const filteredTimers = state
+        .timers
+        .filter(timer => {
+            if (filterBy === 'COMPLETED') {
+                // Show only completed timers from today
+                return timer.status === 'COMPLETED' &&
+                    dayjs(timer.completed_at).isSame(new Date(), 'day');
+            } else {
+                // Show all queued timers regardless of creation date
+                return timer.status === 'QUEUED';
+            }
+        })
+        .sort((a, b) => {
+            if (filterBy === 'COMPLETED') {
+                return new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime();
+            }
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
 
     const resumeTimer = (timer: TimerModel) => {
         setState(prev => ({
