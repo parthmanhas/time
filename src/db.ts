@@ -3,15 +3,44 @@ import { collection, doc, getDocs, setDoc, deleteDoc, query, where, getDoc } fro
 import { db } from './config/firebase';
 
 export const createUpdateTimer = async (timer: TimerModel, userId: string) => {
-    const {newTask, newTag, ...rest} = timer;
+    const { newTask, newTag, ...rest } = timer;
     const timerRef = doc(db, `users/${userId}/timers/${timer.id}`);
     await setDoc(timerRef, rest);
 };
 
 export const getTimers = async (userId: string): Promise<TimerModel[]> => {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
     const timersRef = collection(db, `users/${userId}/timers`);
-    const snapshot = await getDocs(timersRef);
-    return snapshot.docs.map(doc => doc.data() as TimerModel);
+
+    // show completed only todays
+    const completedTimersQuery = query(
+        timersRef,
+        where('status', '==', 'COMPLETED'),
+        where('completed_at', '>=', startOfDay.toISOString()),
+        where('completed_at', '<=', endOfDay.toISOString())
+    );
+
+    const otherThanCompletedTimersQuery = query(
+        timersRef,
+        where('status', 'in', ['QUEUED', 'PAUSED']),
+        where('created_at', '>=', startOfDay.toISOString()),
+        where('created_at', '<=', endOfDay.toISOString())
+    );
+
+    const [completedSnapshot, activeSnapshot] = await Promise.all([
+        getDocs(completedTimersQuery),
+        getDocs(otherThanCompletedTimersQuery)
+    ]);
+
+    return [
+        ...completedSnapshot.docs.map(doc => doc.data() as TimerModel),
+        ...activeSnapshot.docs.map(doc => doc.data() as TimerModel)
+    ];
 };
 
 export const deleteTimer = async (timerId: string, userId: string) => {
@@ -23,14 +52,14 @@ export const deleteTimer = async (timerId: string, userId: string) => {
 export const getRoutines = async (userId: string): Promise<RoutineWithCompletions[]> => {
     const routinesRef = collection(db, `users/${userId}/routines`);
     const snapshot = await getDocs(routinesRef);
-    
+
     // Get all routines and their completions in parallel
     const routinesWithCompletions = await Promise.all(
         snapshot.docs.map(async (doc) => {
             const routineName = doc.data().name;
             const completionsRef = collection(db, `users/${userId}/routines/${routineName}/completions`);
             const completionsSnapshot = await getDocs(completionsRef);
-            
+
             return {
                 name: routineName,
                 completions: completionsSnapshot.docs.map(doc => doc.data().date.toDate())
@@ -68,7 +97,7 @@ export const commitRoutine = async (routine: string, date: Date, userId: string)
 export const deleteOneRoutineCompletion = async (routine: string, date: Date, userId: string) => {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -80,10 +109,10 @@ export const deleteOneRoutineCompletion = async (routine: string, date: Date, us
     );
 
     const snapshot = await getDocs(q);
-    
+
     // Delete all completions within the same day in parallel
     await Promise.all(
-        snapshot.docs.map(doc => 
+        snapshot.docs.map(doc =>
             deleteDoc(doc.ref)
         )
     );
