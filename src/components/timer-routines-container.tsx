@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { TimerModel, AppState } from "../types";
+import { AppState, TimerModel } from "../types";
 import { Timer } from "./timer";
 import { RoutinesContainer } from "./routines-container";
 import { cn } from "../utils";
@@ -15,7 +15,6 @@ type TimerRoutinesContainerProps = {
     dbReady: boolean;
     addRoutine: (key: React.KeyboardEvent<HTMLInputElement>) => Promise<void>;
     addRoutineButtonClick: () => Promise<void>;
-    clearRoutine: (routine: string) => Promise<void>;
     timerSelected: boolean;
     mobile?: boolean;
     setTimerSelected: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,12 +26,9 @@ export function TimerRoutinesContainer({
     state,
     setState,
     getNewTimer,
-    saveTimer,
     workerRef,
     dbReady,
-    addRoutine,
     addRoutineButtonClick,
-    clearRoutine,
     timerSelected,
     setTimerSelected,
 }: TimerRoutinesContainerProps) {
@@ -57,12 +53,12 @@ export function TimerRoutinesContainer({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center w-full"
                     >
                         <Timer
                             state={state}
                             setState={setState}
                             getNewTimer={getNewTimer}
-                            saveTimer={saveTimer}
                             workerRef={workerRef}
                         />
                     </motion.div>
@@ -73,14 +69,13 @@ export function TimerRoutinesContainer({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
+                        className="flex items-center justify-center w-full"
                     >
                         <RoutinesContainer
                             state={state}
                             setState={setState}
                             dbReady={dbReady}
-                            addRoutine={addRoutine}
                             addRoutineButtonClick={addRoutineButtonClick}
-                            clearRoutine={clearRoutine}
                         />
                     </motion.div>
                 )}

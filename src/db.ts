@@ -1,4 +1,4 @@
-import { TimerModel } from "./types";
+import { RoutineWithCompletions, TimerModel } from "./types";
 import { collection, doc, getDocs, setDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
 import { db } from './config/firebase';
 
@@ -6,6 +6,7 @@ const TIMERS_DB = 'time-db';
 const TIMERS_STORE = 'timers';
 const ROUTINES_COMPLETION_STORE = 'routines-completion';
 const ROUTINES_STORE = 'routines';
+
 
 export const createUpdateTimer = async (timer: TimerModel, userId: string) => {
     const timerRef = doc(db, `usersTest/${userId}/timers/${timer.id}`);
@@ -24,10 +25,25 @@ export const deleteTimer = async (timerId: string, userId: string) => {
 };
 
 
-export const getRoutines = async (userId: string): Promise<string[]> => {
+export const getRoutines = async (userId: string): Promise<RoutineWithCompletions[]> => {
     const routinesRef = collection(db, `usersTest/${userId}/routines`);
     const snapshot = await getDocs(routinesRef);
-    return snapshot.docs.map(doc => doc.data().name);
+    
+    // Get all routines and their completions in parallel
+    const routinesWithCompletions = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+            const routineName = doc.data().name;
+            const completionsRef = collection(db, `usersTest/${userId}/routines/${routineName}/completions`);
+            const completionsSnapshot = await getDocs(completionsRef);
+            
+            return {
+                name: routineName,
+                completions: completionsSnapshot.docs.map(doc => doc.data().date.toDate())
+            };
+        })
+    );
+
+    return routinesWithCompletions;
 };
 
 export const createRoutine = async (routine: string, userId: string) => {
@@ -49,13 +65,32 @@ export const deleteRoutine = async (routine: string, userId: string) => {
     await deleteDoc(routineRef);
 };
 
-export const addRoutineCompletion = async (routine: string, date: Date, userId: string) => {
-    const completionRef = doc(db, `usersTest/${userId}/${routine}/${date.toISOString()}`);
+export const commitRoutine = async (routine: string, date: Date, userId: string) => {
+    const completionRef = doc(db, `usersTest/${userId}/routines/${routine}/completions/${date.toISOString()}`);
     await setDoc(completionRef, { date });
 }
 
 export const deleteOneRoutineCompletion = async (routine: string, date: Date, userId: string) => {
-    const completionRef = doc(db, `usersTest/${userId}/${routine}/${date.toISOString()}`);
-    await deleteDoc(completionRef);
-}
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const completionsRef = collection(db, `usersTest/${userId}/routines/${routine}/completions`);
+    const q = query(
+        completionsRef,
+        where('date', '>=', startOfDay),
+        where('date', '<=', endOfDay)
+    );
+
+    const snapshot = await getDocs(q);
+    
+    // Delete all completions within the same day in parallel
+    await Promise.all(
+        snapshot.docs.map(doc => 
+            deleteDoc(doc.ref)
+        )
+    );
+};
 

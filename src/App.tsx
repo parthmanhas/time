@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { createUpdateTimer, deleteRoutine, deleteTimer, getRoutines, getTimers } from "./db";
-import { TimerModel, AppState, TimerStatus } from "./types";
+import { TimerModel, AppState, TimerStatus, RoutineWithCompletions } from "./types";
 import { formatTime } from "./lib";
 import { CompletedAndPausedTimers } from "./components/completed-paused-timers";
 import { Charts } from "./components/charts";
@@ -13,6 +13,8 @@ function App() {
   const { user, logout } = useAuth();
   const [dbReady, setDbReady] = useState(true);
   const [timerSelected, setTimerSelected] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640); // 640px matches sm: breakpoint
+
 
   const getNewTimer = () => {
     return {
@@ -59,9 +61,9 @@ function App() {
   }
 
   const refreshRoutines = async () => {
-    // setState(prev => ({ ...prev, routines }));
-    // if (!user) return;
-    // const routines: string[] = await getRoutines(user.uid);
+    if (!user) return;
+    const routines: RoutineWithCompletions[] = await getRoutines(user.uid);
+    setState(prev => ({ ...prev, routines, selectedRoutine: routines[0]?.name || '' }));
   }
 
   const removeTimer = async (timerId: string) => {
@@ -86,13 +88,7 @@ function App() {
       return;
     };
     setState(prev => ({ ...prev, newRoutine: '' }));
-    await saveRoutine(state.newRoutine, user.uid);
-    await refreshRoutines();
-  }
-
-  const clearRoutine = async (routine: string) => {
-    if (!user) return;
-    await deleteRoutine(routine, user.uid);
+    // await saveRoutine(state.newRoutine, user.uid);
     await refreshRoutines();
   }
 
@@ -150,6 +146,15 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="w-screen h-screen grid grid-cols-3 bg-black text-white overflow-hidden">
       <nav className="w-full h-[3rem] col-span-3 flex justify-end items-center px-2">
@@ -161,52 +166,53 @@ function App() {
         }
       </nav>
 
-      <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
-        <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
-          <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
-            <TimerRoutinesContainer
-              mobile={true}
-              className="w-full h-full flex flex-col items-center justify-center"
-              addRoutine={addRoutine}
-              addRoutineButtonClick={addRoutineButtonClick}
-              clearRoutine={clearRoutine}
-              dbReady={dbReady}
-              getNewTimer={getNewTimer}
-              saveTimer={saveTimer}
-              setTimerSelected={setTimerSelected}
-              state={state}
-              setState={setState}
-              timerSelected={timerSelected}
-              workerRef={workerRef}
-            />
+      {isMobile && (
+        <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
+          <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
+            <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
+              <TimerRoutinesContainer
+                mobile={true}
+                className="w-full h-full flex flex-col items-center justify-center"
+                addRoutine={addRoutine}
+                addRoutineButtonClick={addRoutineButtonClick}
+                dbReady={dbReady}
+                getNewTimer={getNewTimer}
+                saveTimer={saveTimer}
+                setTimerSelected={setTimerSelected}
+                state={state}
+                setState={setState}
+                timerSelected={timerSelected}
+                workerRef={workerRef}
+              />
+            </div>
+
+            <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
+              <Charts
+                className="w-full h-full"
+                state={state}
+                mobile={true}
+              />
+            </div>
+
+            <div id="timers-list" className="carousel-item w-full flex-shrink-0 snap-center">
+              <CompletedAndPausedTimers
+                className="w-full h-full px-5"
+                state={state}
+                removeTimer={removeTimer}
+                setState={setState}
+                workerRef={workerRef}
+                mobile={true}
+              />
+            </div>
           </div>
 
-          <div id="charts" className="carousel-item w-full flex-shrink-0 snap-center">
-            <Charts
-              className="w-full h-full"
-              state={state}
-              mobile={true}
-            />
-          </div>
-
-          <div id="timers-list" className="carousel-item w-full flex-shrink-0 snap-center">
-            <CompletedAndPausedTimers
-              className="w-full h-full px-5"
-              state={state}
-              removeTimer={removeTimer}
-              setState={setState}
-              workerRef={workerRef}
-              mobile={true}
-            />
+          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 bg-black">
+            <a href="#timer-container" className="btn btn-md">timer</a>
+            <a href="#charts" className="btn btn-md">charts</a>
+            <a href="#timers-list" className="btn btn-md">history</a>
           </div>
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-2 py-2 bg-black">
-          <a href="#timer-container" className="btn btn-md">timer</a>
-          <a href="#charts" className="btn btn-md">charts</a>
-          <a href="#timers-list" className="btn btn-md">history</a>
-        </div>
-      </div>
+      )}
 
       <Charts
         className="h-[500px] pt-[10vh]"
@@ -216,7 +222,6 @@ function App() {
         className="hidden sm:flex flex-col items-center h-[500px] pt-[10vh]"
         addRoutine={addRoutine}
         addRoutineButtonClick={addRoutineButtonClick}
-        clearRoutine={clearRoutine}
         dbReady={dbReady}
         getNewTimer={getNewTimer}
         saveTimer={saveTimer}

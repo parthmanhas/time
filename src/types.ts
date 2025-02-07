@@ -19,5 +19,11 @@ export type AppState = {
   timers: TimerModel[],
   selectedRoutine: string,
   newRoutine: string,
-  routines: string[]
+  routines: RoutineWithCompletions[]
 }
+
+
+export type RoutineWithCompletions = {
+    name: string;
+    completions: Date[];
+};

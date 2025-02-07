@@ -5,6 +5,9 @@ import { cn } from "../utils";
 import { useEffect, useState } from "react";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
+import { AppState } from "../types";
+import { commitRoutine, deleteOneRoutineCompletion as deleteOneRoutineCompletions } from "../db";
+import { useAuth } from "../contexts/AuthContext";
 
 const generateCurrentYearDates = () => {
     const startOfYear = dayjs().startOf('year');
@@ -20,46 +23,35 @@ const generateCurrentYearDates = () => {
 
     return dates;
 }
-export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) => {
+export const Routines = ({ name, state }: { name: string, state: AppState }) => {
 
     const dates = generateCurrentYearDates();
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [completedDates, setCompletedDates] = useState<Record<string, number>>({});
+    const [completions, setCompletions] = useState<Record<string, number>>(groupCompletionsByDate((state.routines.find(routine => routine.name === name)?.completions || []).map(date => dayjs(date).format('YYYY-MM-DD'))));
     const [editing, setEditing] = useState(false);
 
-    useEffect(() => {
-        if (!dbReady) return;
-        (async () => {
-            setSelectedDate(null);
-            setCompletedDates({});
-            try {
-                // const completedDates = await getRoutineCompletions(name) as string[];
-                // setCompletedDates(groupCompletionsByDate(completedDates));
-            } catch (err) {
-                console.error(err);
-            }
-        })()
-    }, [name, dbReady])
+    const { user } = useAuth();
 
-
-    const commitRoutine = async (date: string) => {
-        return;
+    const _commitRoutine = async (date: string) => {
         if (dayjs(date).isSame(new Date, 'day') || (editing && dayjs(date).isBefore(new Date()))) {
-            //return if completions > 6
-            if (completedDates[date] && completedDates[date] > 5) return;
-            // const updatedCompletions = await commitRoutineCompletion(name, new Date(date)) as string[];
-            // const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-            // setCompletedDates(updatedCompletionsGrouped);
-
-            // Show confetti when completing (not uncompleting)
-            // if (updatedCompletionsGrouped[date]) {
-            //     confetti({
-            //         particleCount: 100,
-            //         spread: 70,
-            //         origin: { y: 0.6 },
-            //         colors: ['#22C55E', '#16A34A', '#15803D', '#166534', '#14532D', '#124D28', '#0F3F1F', '#0D3A1B', '#0B2F15', '#092610', '#071F0B', '#051A07', '#031404']
-            //     });
-            // }
+            setCompletions(prev => {
+                const formattedDate = dayjs(date).format('YYYY-MM-DD');
+                return {
+                    ...prev,
+                    [formattedDate]: (prev[formattedDate] || 0) + 1
+                };
+            })
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#22C55E', '#16A34A', '#15803D', '#166534', '#14532D', '#124D28', '#0F3F1F', '#0D3A1B', '#0B2F15', '#092610', '#071F0B', '#051A07', '#031404']
+            });
+            if (!user) return;
+            const randomDate = new Date(date); //same date with different time
+            randomDate.setHours(Math.floor(Math.random() * 24));
+            randomDate.setMinutes(Math.floor(Math.random() * 60));
+            randomDate.setSeconds(Math.floor(Math.random() * 60));
+            commitRoutine(name, randomDate, user.uid);
         };
     }
 
@@ -70,11 +62,10 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
         editing: boolean;
         commitRoutine: (date: string) => void;
         completedDates: Record<string, number>;
-        selectedDate: string | null;
         setEditing: React.Dispatch<React.SetStateAction<boolean>>;
     }
 
-    const CarouselItem = ({ id, startMonth, dates, editing, commitRoutine, completedDates, selectedDate, setEditing }: CarouselItem) => (
+    const CarouselItem = ({ id, startMonth, dates, editing, commitRoutine, completedDates, setEditing }: CarouselItem) => (
         <div id={id} className="carousel-item flex flex-wrap gap-2 h-full w-full mx-5">
             {Array.from({ length: 3 }, (_, i) => i + startMonth).map((month) => (
                 <div key={month} className="flex flex-col gap-2">
@@ -90,10 +81,14 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         onClick={() => commitRoutine(date)}
                                         onTouchStart={() => {
                                             const timer = setTimeout(async () => {
-                                                if (completedDates[date]) {
-                                                    // const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
-                                                    // const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-                                                    // setCompletedDates(updatedCompletionsGrouped);
+                                                if (completions[dayjs(date).format('YYYY-MM-DD')]) {
+                                                    setCompletions(prev => {
+                                                        const formattedDate = dayjs(date).format('YYYY-MM-DD');
+                                                        const { [formattedDate]: _, ...rest } = prev;
+                                                        return rest;
+                                                    })
+                                                    if (!user) return;
+                                                    deleteOneRoutineCompletions(name, new Date(date), user.uid);
                                                 }
                                             }, 500);
                                             const cleanup = () => clearTimeout(timer);
@@ -102,11 +97,15 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                         }}
                                         onMouseDown={() => {
                                             const timer = setTimeout(async () => {
-                                                // if (completedDates[date]) {
-                                                //     const updatedCompletions = await deleteOneRoutineCompletion(name, new Date(date)) as string[];
-                                                //     const updatedCompletionsGrouped = groupCompletionsByDate(updatedCompletions);
-                                                //     setCompletedDates(updatedCompletionsGrouped);
-                                                // }
+                                                if (completions[dayjs(date).format('YYYY-MM-DD')]) {
+                                                    setCompletions(prev => {
+                                                        const formattedDate = dayjs(date).format('YYYY-MM-DD');
+                                                        const { [formattedDate]: _, ...rest } = prev;
+                                                        return rest;
+                                                    })
+                                                    if (!user) return;
+                                                    deleteOneRoutineCompletions(name, new Date(date), user.uid);
+                                                }
                                             }, 500);
 
                                             const cleanup = () => clearTimeout(timer);
@@ -123,7 +122,6 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                                             completedDates[date] > 5 && "bg-red-500 !animate-none !border-none",
                                             dayjs(date).isBefore(new Date(), 'day') && editing && "border-2 animate-bounce border-yellow-500",
                                             dayjs(date).isSame(new Date(), 'day') && !completedDates[date] && "bg-yellow-500",
-                                            dayjs(selectedDate).isSame(new Date(), 'day') && dayjs(selectedDate).isSame(date, 'day') && "!bg-green-500"
                                         )}
                                     >
                                         {completedDates[date]}
@@ -154,22 +152,21 @@ export const Routines = ({ name, dbReady }: { name: string, dbReady: boolean }) 
                 {[1, 4, 7, 10].map((startMonth, index) => (
                     <CarouselItem
                         key={startMonth}
-                        id={`item${index + 1}`}
+                        id={`quarter-${index + 1}`}
                         startMonth={startMonth}
                         dates={dates}
                         editing={editing}
-                        commitRoutine={commitRoutine}
-                        completedDates={completedDates}
-                        selectedDate={selectedDate}
+                        commitRoutine={_commitRoutine}
+                        completedDates={completions}
                         setEditing={setEditing}
                     />
                 ))}
             </div>
             <div className="flex w-full justify-center gap-2 py-2">
-                <a href="#item1" className="btn btn-xs">1</a>
-                <a href="#item2" className="btn btn-xs">2</a>
-                <a href="#item3" className="btn btn-xs">3</a>
-                <a href="#item4" className="btn btn-xs">4</a>
+                <a href="#quarter-1" className="btn btn-xs">1</a>
+                <a href="#quarter-2" className="btn btn-xs">2</a>
+                <a href="#quarter-3" className="btn btn-xs">3</a>
+                <a href="#quarter-4" className="btn btn-xs">4</a>
             </div>
         </>
     )
