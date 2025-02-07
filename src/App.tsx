@@ -165,12 +165,12 @@ function App() {
       </nav>
 
       {isMobile && (
-        <div className="col-span-3 relative h-[calc(100vh-4rem)] sm:hidden">
+        <div className="col-span-3 relative h-[80vh] sm:hidden">
           <div className="carousel w-full h-full snap-x snap-mandatory overflow-x-auto">
             <div id="timer-container" className="carousel-item w-full flex-shrink-0 snap-center" tabIndex={0}>
               <TimerRoutinesContainer
                 mobile={true}
-                className="w-full h-full flex flex-col items-center justify-center"
+                className="w-full h-full flex flex-col items-center justify-start pt-[10vh]"
                 addRoutine={addRoutine}
                 addRoutineButtonClick={addRoutineButtonClick}
                 getNewTimer={getNewTimer}

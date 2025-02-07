@@ -92,7 +92,7 @@ export function RoutinesContainer({ state, setState }: RoutinesProps) {
                         <p className="text-center pt-10">select a routine to display</p>
                     }
                 </> :
-                <div className="flex justify-center pt-16">no routines yet</div>
+                <div className="flex justify-center items-center h-full w-full">no routines yet</div>
             }
         </div>
     )

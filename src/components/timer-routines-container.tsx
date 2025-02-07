@@ -67,7 +67,7 @@ export function TimerRoutinesContainer({
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="flex items-center justify-center w-full"
+                        className="flex items-center justify-center w-full px-5"
                     >
                         <RoutinesContainer
                             state={state}
