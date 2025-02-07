@@ -136,8 +136,8 @@ export const Timer = ({ className, mobile = false, state, setState, getNewTimer,
                     <div className="flex w-full justify-between gap-2 md:gap-3">
                         <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 600 >= 6000} onClick={() => addTime(600)} className="btn btn-outline text-lg md:text-2xl">+10</button>
                         <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 1200 >= 6000} onClick={() => addTime(1200)} className="btn btn-outline text-lg md:text-2xl">+20</button>
-                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 1800 >= 6000} onClick={() => addTime(1800)} className="btn btn-outline text-lg md:text-2xl">+30</button>
-                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 3600 >= 6000} onClick={() => addTime(3600)} className="btn btn-outline text-lg md:text-2xl">+60</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 3000 >= 6000} onClick={() => addTime(3000)} className="btn btn-outline text-lg md:text-2xl">+50</button>
+                        <button disabled={state.currentTimer.status === 'RUNNING' || state.currentTimer.duration + 4800 >= 6000} onClick={() => addTime(4800)} className="btn btn-outline text-lg md:text-2xl">+80</button>
                     </div>
                     <h1 className="text-[7rem] sm:text-[8rem] countdown justify-center">
                         <span style={{ "--value": formatMinutes(state.currentTimer.remaining_time || 0) } as React.CSSProperties}>{formatMinutes(state.currentTimer.remaining_time || 0)}</span>:
