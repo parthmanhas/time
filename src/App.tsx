@@ -8,6 +8,8 @@ import { Charts } from "./components/charts";
 import { TimerRoutinesContainer } from "./components/timer-routines-container";
 import { useAuth } from "./contexts/AuthContext";
 import { Login } from "./components/Login";
+import { disableNetworkApp, enableNetworkApp } from "./config/firebase";
+import dayjs from "dayjs";
 
 export const getNewTimer = () => {
   return {
@@ -39,7 +41,7 @@ function App() {
 
   const workerRef = useRef<Worker | null>(null);
 
- 
+
   const completeAndSaveTimer = async () => {
     const completedTimer = {
       ...state.currentTimer,
@@ -97,10 +99,24 @@ function App() {
   }
 
   useEffect(() => {
-    if (user) {
-      refreshTimers();
-      refreshRoutines();
-    }
+    const initApp = async () => {
+      if (user) {
+        const lastOnline = localStorage.getItem('last-online');
+        const daysSinceLastOnline = lastOnline ?
+          dayjs().diff(dayjs(lastOnline), 'days') :
+          Infinity;
+
+        if (daysSinceLastOnline >= 1) {
+          await enableNetworkApp();
+          localStorage.setItem('last-online', dayjs().toISOString());
+        } else {
+          await disableNetworkApp();
+        }
+        await refreshTimers();
+        await refreshRoutines();
+      }
+    };
+    initApp();
   }, []);
 
   useEffect(() => {

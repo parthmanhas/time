@@ -37,6 +37,7 @@ export function TimerRoutinesContainer({
         )}>
             <div className={cn(
                 "flex gap-2 bg-black absolute top-0",
+                state.currentTimer.status === 'RUNNING' && "disabled"
             )}>
                 <p className="text-lg">track time</p>
                 <input type="checkbox" onChange={e => setTimerSelected(!e.currentTarget.checked)} className="toggle text-black bg-white" />

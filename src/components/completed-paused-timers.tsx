@@ -55,6 +55,7 @@ export const CompletedAndPausedTimers = ({ className, mobile = false, state, set
     return (
         <div className={cn(
             className && className,
+            state.currentTimer.status === "RUNNING" && "disabled",
             mobile && "h-screen sm:hidden flex flex-col items-center",
             !mobile && "hidden sm:h-full w-full sm:flex sm:flex-col justify-start opacity-20 hover:opacity-100",
             !mobile && state.currentTimer.status === 'RUNNING' && "border-white/10 text-white/30"
