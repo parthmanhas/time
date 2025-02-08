@@ -34,7 +34,7 @@ function App() {
   const [state, setState] = useState<AppState>({
     currentTimer: getNewTimer(),
     timers: [],
-    selectedRoutine: '',
+    selectedRoutine: null,
     newRoutine: '',
     routines: []
   });
@@ -69,7 +69,7 @@ function App() {
   const refreshRoutines = async () => {
     if (!user) return;
     const routines: RoutineWithCompletions[] = await getRoutines(user.uid);
-    setState(prev => ({ ...prev, routines, selectedRoutine: routines[0]?.name || '' }));
+    setState(prev => ({ ...prev, routines, selectedRoutine: routines[0] || null }));
   }
 
   const removeTimer = async (timerId: string) => {

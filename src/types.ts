@@ -17,13 +17,14 @@ export interface TimerModel {
 export type AppState = {
   currentTimer: TimerModel,
   timers: TimerModel[],
-  selectedRoutine: string,
+  selectedRoutine: RoutineWithCompletions | null,
   newRoutine: string,
   routines: RoutineWithCompletions[]
 }
 
 
 export type RoutineWithCompletions = {
-    name: string;
-    completions: Date[];
+  name: string;
+  completions: Date[];
+  duration: number
 };

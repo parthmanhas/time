@@ -1,5 +1,5 @@
 import { RoutineWithCompletions, TimerModel } from "./types";
-import { collection, doc, getDocs, setDoc, deleteDoc, query, where, getDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, deleteDoc, query, where, getDoc, updateDoc } from 'firebase/firestore';
 import { db, disableNetworkApp, enableNetworkApp } from './config/firebase';
 
 const withNetwork = async <T>(operation: () => Promise<T>) => {
@@ -72,11 +72,13 @@ export const getRoutines = async (userId: string): Promise<RoutineWithCompletion
     const routinesWithCompletions = await Promise.all(
         snapshot.docs.map(async (doc) => {
             const routineName = doc.data().name;
+            const duration = doc.data().duration;
             const completionsRef = collection(db, `users/${userId}/routines/${routineName}/completions`);
             const completionsSnapshot = await getDocs(completionsRef);
 
             return {
                 name: routineName,
+                duration,
                 completions: completionsSnapshot.docs.map(doc => doc.data().date.toDate())
             };
         })
@@ -100,6 +102,13 @@ export const readRoutine = async (routine: string, userId: string) => {
     }
     return null;
 }
+
+export const updateRoutineInDB = async (name: string, updates: Partial<RoutineWithCompletions>, userId: string) => {
+  return withNetwork(async () => {
+    const routineRef = doc(db, `users/${userId}/routines/${name}`);
+    await updateDoc(routineRef, updates);
+  });
+};
 
 export const deleteRoutine = async (routine: string, userId: string) => {
     return withNetwork(async () => {

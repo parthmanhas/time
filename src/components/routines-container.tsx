@@ -15,12 +15,16 @@ type RoutinesProps = {
 }
 
 export function RoutinesContainer({ state, setState }: RoutinesProps) {
-
     const { user } = useAuth();
 
     const _createRoutine = () => {
-        const newRoutine = { name: state.newRoutine, completions: [] };
-        setState(prev => ({ ...prev, routines: [...prev.routines, newRoutine], newRoutine: '', selectedRoutine: prev.selectedRoutine === '' ? newRoutine.name : prev.selectedRoutine }));
+        const newRoutine = { name: state.newRoutine, duration: 600, completions: [] };
+        setState(prev => ({
+            ...prev,
+            routines: [...prev.routines, newRoutine],
+            newRoutine: '',
+            selectedRoutine: prev.selectedRoutine ? prev.selectedRoutine : newRoutine
+        }));
         if (!user) return;
         createRoutine(state.newRoutine, user.uid);
     }
@@ -62,13 +66,13 @@ export function RoutinesContainer({ state, setState }: RoutinesProps) {
                                     className={cn(
                                         "border border-transparent rounded block hover:border-slate-700",
                                         // "hover:border border-slate-700 rounded",
-                                        state.selectedRoutine === routine.name && "border-white hover:border-white",
+                                        state.selectedRoutine?.name === routine.name && "border-white hover:border-white",
                                     )}
-                                    onClick={() => setState(prev => ({ ...prev, selectedRoutine: routine.name }))}>
+                                    onClick={() => setState(prev => ({ ...prev, selectedRoutine: routine }))}>
                                     <a className="group relative">
                                         {routine.name}
                                         <span onClick={() => {
-                                            setState(prev => ({ ...prev, selectedRoutine: '', routines: prev.routines.filter(r => r.name !== routine.name) }));
+                                            setState(prev => ({ ...prev, selectedRoutine: null, routines: prev.routines.filter(r => r.name !== routine.name) }));
                                             if (!user) return;
                                             deleteRoutine(routine.name, user.uid);
                                         }} className="hidden group-hover:block badge badge-xs absolute -top-2 -right-3  bg-red-500 text-white">x</span>
@@ -80,13 +84,17 @@ export function RoutinesContainer({ state, setState }: RoutinesProps) {
                     {state.selectedRoutine
                         ?
                         <motion.div
-                            key={state.selectedRoutine}
+                            key={state.selectedRoutine.name}
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.5 }}
                         >
-                            <Routines name={state.selectedRoutine} state={state} setState={setState} />
+                            <Routines
+                                routine={state.selectedRoutine}
+                                state={state}
+                                setState={setState}
+                            />
                         </motion.div>
                         :
                         <p className="text-center pt-10">select a routine to display</p>

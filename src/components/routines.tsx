@@ -1,12 +1,10 @@
-// generate dates for a year
-
 import dayjs from "dayjs";
 import { cn } from "../utils";
 import { useState } from "react";
 import { Edit, Sparkles } from "lucide-react";
 import confetti from 'canvas-confetti';
-import { AppState } from "../types";
-import { commitRoutine, createUpdateTimer, deleteOneRoutineCompletion as deleteOneRoutineCompletions, deleteTimer } from "../db";
+import { AppState, RoutineWithCompletions } from "../types";
+import { commitRoutine, createUpdateTimer, deleteOneRoutineCompletion as deleteOneRoutineCompletions, deleteTimer, updateRoutineInDB } from "../db";
 import { useAuth } from "../contexts/AuthContext";
 import { getNewTimer } from "../App";
 
@@ -24,10 +22,11 @@ const generateCurrentYearDates = () => {
 
     return dates;
 }
-export const Routines = ({ name, state, setState }: { name: string, state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>> }) => {
-
+export const Routines = ({ routine, state, setState }: { routine: RoutineWithCompletions, state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>> }) => {
+    const { name } = routine;
     const dates = generateCurrentYearDates();
-    const [completions, setCompletions] = useState<Record<string, number>>(groupCompletionsByDate((state.routines.find(routine => routine.name === name)?.completions || []).map(date => dayjs(date).format('YYYY-MM-DD'))));
+    const [completions, setCompletions] = useState<Record<string, number>>(groupCompletionsByDate(routine.completions.map(date => dayjs(date).format('YYYY-MM-DD'))));
+    const [duration, setDuration] = useState(routine.duration);
     const [editing, setEditing] = useState(false);
 
     const { user } = useAuth();
@@ -53,12 +52,24 @@ export const Routines = ({ name, state, setState }: { name: string, state: AppSt
             randomDate.setMinutes(Math.floor(Math.random() * 60));
             randomDate.setSeconds(Math.floor(Math.random() * 60));
             commitRoutine(name, randomDate, user.uid);
-            // add default time of 10 minutes for a routine completion
-            const timer = { ...getNewTimer(), duration: 600, completed_at: new Date().toISOString(), status: "COMPLETED" as const, task: name, tags: [name] };
+            // duration is being passed from parent
+            if (duration === 0) return;
+            const timer = { ...getNewTimer(), duration, completed_at: new Date().toISOString(), status: "COMPLETED" as const, task: name, tags: [name] };
             createUpdateTimer(timer, user.uid);
             setState(prev => ({ ...prev, timers: [...prev.timers, timer] }));
         };
     }
+
+    const updateRoutine = async (name: string, updates: Partial<RoutineWithCompletions>) => {
+        setState(prev => ({
+            ...prev,
+            routines: prev.routines.map(r =>
+                r.name === name ? { ...r, ...updates } : r
+            )
+        }));
+        if (!user) return;
+        await updateRoutineInDB(name, updates, user.uid);
+    };
 
     type CarouselItem = {
         id: string;
@@ -114,7 +125,6 @@ export const Routines = ({ name, state, setState }: { name: string, state: AppSt
                                                     if (!user) return;
                                                     deleteOneRoutineCompletions(name, new Date(date), user.uid);
                                                     const timersToDelete = state.timers.filter(timer => timer.task === name && dayjs(timer.completed_at).isSame(new Date(date), 'day'));
-                                                    console.log(timersToDelete);
                                                     timersToDelete.forEach(timer => deleteTimer(timer.id, user.uid));
                                                     setState(prev => ({ ...prev, timers: prev.timers.filter(timer => !timersToDelete.includes(timer)) }));
                                                 }
@@ -148,12 +158,34 @@ export const Routines = ({ name, state, setState }: { name: string, state: AppSt
                 </div>
             ))}
             <div
-                onClick={() => setEditing(!editing)}
-                className="flex justify-end w-full cursor-pointer">
-                <Edit className={cn(
-                    editing && "text-amber-300",
-                    "hover:text-amber-300"
-                )} />
+                className="flex justify-between items-center w-full">
+                <select
+                    value={duration?.toString() || 'default'}
+                    onChange={(e) => {
+                        const duration = parseInt(e.target.value);
+                        setDuration(duration);
+                        if (!isNaN(duration)) {
+                            updateRoutine(routine.name, { duration });
+                        }
+                    }}
+                    className="cursor-pointer select select-bordered max-w-xs bg-black"
+                >
+                    <option disabled value="default">default duration</option>
+                    <option value="0">No time</option>
+                    <option value="60">1 minute</option>
+                    <option value="120">2 minutes</option>
+                    <option value="300">5 minutes</option>
+                    <option value="600">10 minutes</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1800">30 minutes</option>
+                </select>
+                <Edit
+                    size={20}
+                    onClick={() => setEditing(!editing)}
+                    className={cn(
+                        editing && "text-amber-300",
+                        "cursor-pointer hover:text-amber-300"
+                    )} />
             </div>
         </div>
     );
